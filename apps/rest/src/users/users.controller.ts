@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Put, Body, Param, Query, HttpCode, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
@@ -8,7 +23,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post('/login')
   @ApiOperation({ summary: 'Login utilisateur' })
@@ -22,8 +37,18 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Liste paginée des utilisateurs' })
   @ApiResponse({ status: 200, description: 'Liste des utilisateurs retournée' })
-  @ApiQuery({ name: 'skip', required: false, type: Number, description: "Nombre d'éléments à ignorer" })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: "Nombre maximum d'éléments à retourner" })
+  @ApiQuery({
+    name: 'skip',
+    required: false,
+    type: Number,
+    description: "Nombre d'éléments à ignorer",
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: "Nombre maximum d'éléments à retourner",
+  })
   async findAll(@Query('skip') skip?: number, @Query('limit') limit?: number) {
     const s = skip ? Number(skip) : 0;
     const l = limit ? Number(limit) : 10;
@@ -34,7 +59,10 @@ export class UsersController {
   @Get(':id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Détails d’un utilisateur spécifique' })
-  @ApiResponse({ status: 200, description: 'Détails de l’utilisateur retournés' })
+  @ApiResponse({
+    status: 200,
+    description: 'Détails de l’utilisateur retournés',
+  })
   async findOne(@Param('id') id: string) {
     return await this.usersService.findOne(id);
   }

@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Check } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  Check,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'reservations' })
@@ -24,11 +30,18 @@ export class Reservation {
   @Column({ name: 'end_time' })
   endTime: Date;
 
-  @ApiProperty({ description: 'Creation date of the reservation', type: String })
+  @ApiProperty({
+    description: 'Creation date of the reservation',
+    type: String,
+  })
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @ApiProperty({ description: 'Status of the reservation', enum: ['pending', 'approved', 'rejected', 'cancelled'], default: 'pending' })
+  @ApiProperty({
+    description: 'Status of the reservation',
+    enum: ['pending', 'approved', 'rejected', 'cancelled'],
+    default: 'pending',
+  })
   @Column({ default: 'pending' })
   status: string;
 }

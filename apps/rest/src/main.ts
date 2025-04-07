@@ -21,4 +21,4 @@ async function bootstrap() {
   await app.listen(3000);
   console.log('Application démarrée sur le port 3000');
 }
-bootstrap();
+void bootstrap();

@@ -1,18 +1,22 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
+import { UserEntity } from '@app/shared';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-  ) { }
+    @InjectRepository(UserEntity)
+    private userRepository: Repository<UserEntity>,
+  ) {}
 
-  async findAll(skip = 0, limit = 10): Promise<User[]> {
+  async findAll(skip = 0, limit = 10): Promise<UserEntity[]> {
     return await this.userRepository.find({
       skip,
       take: limit,
@@ -20,7 +24,7 @@ export class UsersService {
     });
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string): Promise<UserEntity> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException('Utilisateur non trouvé');
@@ -29,7 +33,9 @@ export class UsersService {
   }
 
   async login(loginDto: LoginDto): Promise<{ accessToken: string }> {
-    const user = await this.userRepository.findOne({ where: { email: loginDto.email } });
+    const user = await this.userRepository.findOne({
+      where: { email: loginDto.email },
+    });
     if (!user) {
       throw new UnauthorizedException('Identifiants invalides');
     }
@@ -39,9 +45,9 @@ export class UsersService {
     return { accessToken: 'dummy-jwt-token' };
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<UserEntity> {
     const newUser = this.userRepository.create({
-      keycloakId: `${createUserDto.email}-keycloak-id`,
+      keycloak_id: `${createUserDto.email}-keycloak-id`,
       email: createUserDto.email,
     });
     return await this.userRepository.save(newUser);

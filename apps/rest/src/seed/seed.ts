@@ -11,9 +11,9 @@ async function bootstrap() {
     email: 'admin@example.com',
     firstName: 'Admin',
     lastName: 'User',
-    password: 'password'
+    password: 'password',
   });
   console.log('Utilisateur initial créé.');
   await app.close();
 }
-bootstrap();
+void bootstrap();
