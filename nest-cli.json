@@ -19,6 +19,15 @@
         "tsConfigPath": "apps/eval/tsconfig.app.json"
       }
     },
+    "graphql-api": {
+      "type": "application",
+      "root": "apps/graphql-api",
+      "entryFile": "main",
+      "sourceRoot": "apps/graphql-api/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/graphql-api/tsconfig.app.json"
+      }
+    },
     "rest": {
       "type": "application",
       "root": "apps/rest",

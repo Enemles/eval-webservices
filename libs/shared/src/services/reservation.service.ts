@@ -1,34 +1,27 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ReservationEntity } from 'entities/reservation.entity';
 import { Repository } from 'typeorm';
+import { ReservationEntity } from '../entities/reservation.entity';
 import {
-  createReservationInput,
-  ReservationType,
-} from 'types/reservation.type';
+    createReservationInput,
+    ReservationType,
+} from '../types/reservation.type';
 
-@Resolver(() => ReservationType)
-export class ReservationResolver {
+export class ReservationService {
   constructor(
-    @InjectRepository(ReservationEntity)
     private readonly ReservationRepo: Repository<ReservationEntity>,
   ) {}
 
-  @Query(() => [ReservationType])
   async listReservations(): Promise<ReservationType[]> {
     return this.ReservationRepo.find({
       relations: ['notifications', 'notifications.reservation'],
     });
   }
 
-  @Query(() => ReservationType, { nullable: true })
-  async reservation(@Args('id') id: string): Promise<ReservationType> {
+  async reservation(id: string): Promise<ReservationType> {
     return this.ReservationRepo.findOneOrFail({ where: { id } });
   }
 
-  @Mutation(() => ReservationType)
   async createReservation(
-    @Args('input') input: createReservationInput,
+    input: createReservationInput,
   ): Promise<ReservationType> {
     const newReservation = this.ReservationRepo.create(input);
     const Reservation = await this.ReservationRepo.save(newReservation);
@@ -38,17 +31,15 @@ export class ReservationResolver {
     });
   }
 
-  @Mutation(() => ReservationType)
   async updateReservation(
-    @Args('id') id: string,
-    @Args('input') input: createReservationInput,
+    id: string,
+    input: createReservationInput,
   ): Promise<ReservationType> {
     await this.ReservationRepo.update({ id }, input);
     return this.ReservationRepo.findOneOrFail({ where: { id } });
   }
 
-  @Mutation(() => ReservationType)
-  async deleteReservation(@Args('id') id: string): Promise<boolean> {
+  async deleteReservation(id: string): Promise<boolean> {
     const Reservation = await this.ReservationRepo.findOneOrFail({
       where: { id },
     });

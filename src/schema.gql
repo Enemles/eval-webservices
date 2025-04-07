@@ -58,7 +58,6 @@ type Query {
 }
 
 type Mutation {
-  createUser(input: createUserInput!): UserType!
   updateUser(id: String!, input: createUserInput!): UserType!
   deleteUser(id: String!): UserType!
   createRoom(input: createRoomInput!): RoomType!

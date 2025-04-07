@@ -1,46 +1,36 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RoomEntity } from 'entities/room.entity';
-import { Repository } from 'typeorm';
-import { createRoomInput, RoomType } from 'types/room.type';
 
-@Resolver(() => RoomType)
-export class RoomResolver {
+import { Repository } from 'typeorm';
+import { RoomEntity } from '../entities/room.entity';
+import { RoomType, createRoomInput } from '../types/room.type';
+
+export class RoomService {
   constructor(
     @InjectRepository(RoomEntity)
     private readonly RoomRepo: Repository<RoomEntity>,
   ) {}
 
-  @Query(() => [RoomType])
   async listRooms(): Promise<RoomType[]> {
     return this.RoomRepo.find({
       relations: ['reservations', 'reservations.room'],
     });
   }
-
-  @Query(() => RoomType, { nullable: true })
-  async room(@Args('id') id: string): Promise<RoomType> {
+  async room(id: string): Promise<RoomType> {
     return this.RoomRepo.findOneOrFail({ where: { id } });
   }
 
-  @Mutation(() => RoomType)
-  async createRoom(@Args('input') input: createRoomInput): Promise<RoomType> {
+  async createRoom(input: createRoomInput): Promise<RoomType> {
     const newRoom = this.RoomRepo.create(input);
     const Room = await this.RoomRepo.save(newRoom);
     return this.RoomRepo.findOneOrFail({ where: { id: Room.id } });
   }
 
-  @Mutation(() => RoomType)
-  async updateRoom(
-    @Args('id') id: string,
-    @Args('input') input: createRoomInput,
-  ): Promise<RoomType> {
+  async updateRoom(id: string, input: createRoomInput): Promise<RoomType> {
     await this.RoomRepo.update({ id }, input);
     return this.RoomRepo.findOneOrFail({ where: { id } });
   }
 
-  @Mutation(() => RoomType)
-  async deleteRoom(@Args('id') id: string): Promise<boolean> {
+  async deleteRoom(id: string): Promise<boolean> {
     const Room = await this.RoomRepo.findOneOrFail({ where: { id } });
     if (!Room) {
       return false;
