@@ -1,14 +1,14 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Entity,
   Index,
-  ManyToOne,
   JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ReservationEntity } from './reservation.entity';
-import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('notif')
 export class NotifEntity {
@@ -27,14 +27,14 @@ export class NotifEntity {
 
   @ApiProperty({ description: 'Notification date', type: String })
   @CreateDateColumn({ name: 'notification_date' })
-  notificationDate: Date;
+  notification_date: Date;
 
   @ApiProperty({
     description: 'Indicates if notification has been sent',
     default: false,
   })
   @Column({ name: 'is_sent' })
-  isSent: boolean;
+  is_sent: boolean;
 
   @ManyToOne(
     () => ReservationEntity,
