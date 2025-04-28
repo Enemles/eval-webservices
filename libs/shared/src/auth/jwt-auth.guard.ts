@@ -1,14 +1,18 @@
 import { IS_PUBLIC_KEY } from './public.decorator';
+import { ROLES_KEY } from './roles.decorator';
 import { AuthService } from '../services/auth/auth.service';
 import {
   CanActivate, ExecutionContext,
   Injectable,
+  Logger,
   UnauthorizedException
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
+  private readonly logger = new Logger(JwtAuthGuard.name);
+
   constructor(
     private readonly authService: AuthService,
     private readonly reflector: Reflector
@@ -22,19 +26,24 @@ export class JwtAuthGuard implements CanActivate {
     ]);
 
     if (isPublic) {
+      this.logger.debug('Route publique, pas besoin d\'authentification');
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
+    this.logger.debug(`Vérification du token pour la route: ${request.method} ${request.url}`);
+
     const authHeader = request.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Token missing or invalid');
+      this.logger.warn('En-tête d\'autorisation manquant ou mal formaté');
+      throw new UnauthorizedException('Token missing or invalid format');
     }
 
     const token = authHeader.split(' ')[1];
 
     if (!token) {
+      this.logger.warn('Token non fourni après "Bearer"');
       throw new UnauthorizedException('Token not provided');
     }
 
@@ -43,14 +52,36 @@ export class JwtAuthGuard implements CanActivate {
       const userInfo = await this.authService.validateToken(token);
 
       if (!userInfo) {
+        this.logger.warn('Token invalide ou erreur de validation');
         throw new UnauthorizedException('Invalid token');
+      }
+
+      this.logger.debug(`Utilisateur authentifié: ${userInfo.preferred_username || userInfo.email || userInfo.sub}`);
+      
+      // Vérifier les rôles si nécessaire
+      const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]);
+
+      if (requiredRoles && requiredRoles.length > 0) {
+        const userRoles = userInfo.roles || [];
+        const hasRole = requiredRoles.some(role => userRoles.includes(role));
+        
+        if (!hasRole) {
+          this.logger.warn(`Accès refusé: l'utilisateur n'a pas les rôles requis (${requiredRoles.join(', ')})`);
+          throw new UnauthorizedException('Insufficient permissions');
+        }
+        
+        this.logger.debug(`Rôles validés: ${requiredRoles.join(', ')}`);
       }
 
       // Attach user info to request for use in controllers
       request.user = userInfo;
       return true;
     } catch (error) {
-      throw new UnauthorizedException('Authentication failed');
+      this.logger.error(`Erreur d'authentification: ${error.message}`);
+      throw new UnauthorizedException(`Authentication failed: ${error.message}`);
     }
   }
 } 
