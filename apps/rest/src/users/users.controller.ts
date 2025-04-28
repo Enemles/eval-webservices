@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Body,
   Param,
   Query,
@@ -58,10 +57,10 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Détails d’un utilisateur spécifique' })
+  @ApiOperation({ summary: "Détails d'un utilisateur spécifique" })
   @ApiResponse({
     status: 200,
-    description: 'Détails de l’utilisateur retournés',
+    description: "Détails de l'utilisateur retournés",
   })
   async findOne(@Param('id') id: string) {
     return await this.usersService.findOne(id);
@@ -70,16 +69,16 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Post()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Création d’un nouvel utilisateur (admin)' })
+  @ApiOperation({ summary: "Création d'un nouvel utilisateur (admin)" })
   @ApiResponse({ status: 201, description: 'Utilisateur créé' })
   async create(@Body() createUserDto: CreateUserDto) {
     return await this.usersService.create(createUserDto);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put(':id/extract')
+  @Get(':id/extract')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Extraction CSV des réservations d’un utilisateur' })
+  @ApiOperation({ summary: "Extraction CSV des réservations d'un utilisateur" })
   @ApiResponse({ status: 200, description: 'URL du fichier CSV retournée' })
   async extract(@Param('id') id: string) {
     return await this.usersService.extract(id);

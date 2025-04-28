@@ -34,9 +34,11 @@ export class ReservationsService {
     createReservationDto: CreateReservationDto,
   ): Promise<ReservationEntity> {
     const reservation = this.reservationRepository.create({
-      ...createReservationDto,
+      user_id: createReservationDto.userId,
+      room_id: createReservationDto.roomId,
       start_time: new Date(createReservationDto.startTime),
       end_time: new Date(createReservationDto.endTime),
+      status: 'pending', // Définir un statut par défaut
     });
     return await this.reservationRepository.save(reservation);
   }
@@ -46,17 +48,28 @@ export class ReservationsService {
     updateReservationDto: UpdateReservationDto,
   ): Promise<ReservationEntity> {
     const reservation = await this.findOne(id);
+    
+    // Mise à jour des champs si présents dans le DTO
+    if (updateReservationDto.userId) {
+      reservation.user_id = updateReservationDto.userId;
+    }
+    
+    if (updateReservationDto.roomId) {
+      reservation.room_id = updateReservationDto.roomId;
+    }
+    
     if (updateReservationDto.startTime) {
-      updateReservationDto.startTime = new Date(
-        updateReservationDto.startTime,
-      ).toISOString();
+      reservation.start_time = new Date(updateReservationDto.startTime);
     }
+    
     if (updateReservationDto.endTime) {
-      updateReservationDto.endTime = new Date(
-        updateReservationDto.endTime,
-      ).toISOString();
+      reservation.end_time = new Date(updateReservationDto.endTime);
     }
-    Object.assign(reservation, updateReservationDto);
+    
+    if (updateReservationDto.status) {
+      reservation.status = updateReservationDto.status;
+    }
+    
     return await this.reservationRepository.save(reservation);
   }
 
