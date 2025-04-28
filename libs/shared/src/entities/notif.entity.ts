@@ -19,7 +19,7 @@ export class NotifEntity {
   @ApiProperty({ description: 'Reservation identifier' })
   @Column({ name: 'reservation_id' })
   @Index()
-  reservationId: string;
+  reservation_id: string;
 
   @ApiProperty({ description: 'Notification message' })
   @Column()

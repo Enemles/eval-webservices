@@ -19,6 +19,21 @@
         "tsConfigPath": "apps/eval/tsconfig.app.json"
       }
     },
+    "grpc": {
+      "type": "application",
+      "root": "apps/grpc",
+      "entryFile": "main",
+      "sourceRoot": "apps/grpc/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/grpc/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../../libs/shared/src/proto/**/*",
+            "outDir": "../../libs/shared/src/proto"
+          }
+        ]
+      }
+    },
     "rest": {
       "type": "application",
       "root": "apps/rest",

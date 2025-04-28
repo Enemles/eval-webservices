@@ -11,12 +11,12 @@ export class NotificationsService {
   ) {}
 
   async createNotification(data: {
-    reservationId: string;
+    reservation_id: string;
     message: string;
     notificationDate: string;
   }): Promise<NotifEntity> {
     const notification = this.notificationRepository.create({
-      reservation_id: data.reservationId,
+      reservation_id: data.reservation_id,
       message: data.message,
       notificationDate: new Date(data.notificationDate),
       isSent: false,
