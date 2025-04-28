@@ -1,19 +1,22 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { RoomsModule } from './rooms/rooms.module';
-import { ReservationsModule } from './reservations/reservations.module';
-import { UsersModule } from './users/users.module';
-import { NotificationsController } from './notifications/notifications.controller';
-import { NotificationsService } from './notifications/notifications.service';
-import { ExportController } from './export/export.controller';
-import { ExportService } from './export/export.service';
 import {
   NotifEntity,
   ReservationEntity,
   RoomEntity,
-  UserEntity,
   SharedMinioModule,
+  UserEntity,
 } from '@app/shared';
+import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { ExportController } from './export/export.controller';
+import { ExportService } from './export/export.service';
+import { NotificationsController } from './notifications/notifications.controller';
+import { NotificationsService } from './notifications/notifications.service';
+import { ReservationsModule } from './reservations/reservations.module';
+import { RoomsModule } from './rooms/rooms.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -31,9 +34,17 @@ import {
     ReservationsModule,
     UsersModule,
     TypeOrmModule.forFeature([NotifEntity, ReservationEntity]),
+    AuthModule,
     SharedMinioModule,
   ],
   controllers: [NotificationsController, ExportController],
-  providers: [NotificationsService, ExportService],
+  providers: [
+    NotificationsService,
+    ExportService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

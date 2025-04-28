@@ -11,9 +11,9 @@ export class MinioService {
     const port = parseInt(process.env.MINIO_PORT || '9000', 10);
     const accessKey = process.env.MINIO_ROOT_USER || 'minioadmin';
     const secretKey = process.env.MINIO_ROOT_PASSWORD || 'minioadmin';
-    
+
     this.logger.log(`Initializing MinIO client with: ${endPoint}:${port}, user: ${accessKey}`);
-    
+
     this.client = new Minio.Client({
       endPoint,
       port,
@@ -42,7 +42,7 @@ export class MinioService {
         this.logger.log(`Creating bucket ${bucketName}...`);
         await this.client.makeBucket(bucketName, '');
         this.logger.log(`Bucket ${bucketName} created successfully`);
-        
+
         // Définir une politique d'accès en lecture publique sur le bucket
         await this.setBucketPolicy(bucketName);
       } else {
@@ -59,7 +59,7 @@ export class MinioService {
   async setBucketPolicy(bucketName: string): Promise<void> {
     try {
       this.logger.log(`Setting public read policy for bucket ${bucketName}...`);
-      
+
       // Créer une politique qui permet l'accès en lecture aux objets du bucket
       const policy = {
         Version: '2012-10-17',
@@ -80,7 +80,7 @@ export class MinioService {
           },
         ],
       };
-      
+
       await this.client.setBucketPolicy(bucketName, JSON.stringify(policy));
       this.logger.log(`Public read policy set for bucket ${bucketName}`);
     } catch (error: any) {
@@ -97,7 +97,7 @@ export class MinioService {
     try {
       // Ensure bucket exists before uploading
       await this.createBucket(bucketName);
-      
+
       this.logger.log(`Uploading ${filePath} to ${bucketName}/${objectName}...`);
       await this.client.fPutObject(bucketName, objectName, filePath, {});
       this.logger.log(`Successfully uploaded ${objectName} to ${bucketName}`);
@@ -113,7 +113,7 @@ export class MinioService {
     expiry = 24 * 60 * 60,
   ): Promise<string> {
     this.logger.log(`Generating presigned URL for ${bucketName}/${objectName} (expires in ${expiry}s)`);
-    
+
     // Utiliser la méthode non asynchrone directement (sans callback)
     try {
       const url = await this.client.presignedUrl('GET', bucketName, objectName, expiry);

@@ -9,7 +9,7 @@ export class authController {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
-  ) { }
+  ) {}
 
   @Post('login')
   public async login(@Body() data: any) {

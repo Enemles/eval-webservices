@@ -1,15 +1,15 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { NotificationsModule } from './notifications/notifications.module';
-import { ExportModule } from './export/export.module';
-import { ExtractsModule } from './extracts/extracts.module';
 import {
   NotifEntity,
   ReservationEntity,
   RoomEntity,
-  UserEntity,
   SharedMinioModule,
+  UserEntity,
 } from '@app/shared';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ExportModule } from './export/export.module';
+import { ExtractsModule } from './extracts/extracts.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
