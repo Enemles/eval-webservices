@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../entities/user.entity';
 import { AuthService } from '../services/auth/auth.service';
 import { GqlAuthGuard } from './graphql-auth.guard';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Module({
     imports: [
@@ -10,11 +11,13 @@ import { GqlAuthGuard } from './graphql-auth.guard';
     ],
     providers: [
         AuthService,
-        GqlAuthGuard
+        GqlAuthGuard,
+        JwtAuthGuard
     ],
     exports: [
         AuthService,
-        GqlAuthGuard
+        GqlAuthGuard,
+        JwtAuthGuard
     ]
 })
 export class AuthModule { } 

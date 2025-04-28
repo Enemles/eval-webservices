@@ -18,8 +18,8 @@ export class NotificationsService {
     const notification = this.notificationRepository.create({
       reservation_id: data.reservationId,
       message: data.message,
-      notificationDate: new Date(data.notificationDate),
-      isSent: false,
+      notification_date: new Date(data.notificationDate),
+      is_sent: false,
     });
     return await this.notificationRepository.save(notification);
   }
@@ -36,7 +36,7 @@ export class NotificationsService {
       throw new NotFoundException('Notification not found');
     }
     notification.message = data.message;
-    notification.notificationDate = new Date(data.notificationDate);
+    notification.notification_date = new Date(data.notificationDate);
     return await this.notificationRepository.save(notification);
   }
 

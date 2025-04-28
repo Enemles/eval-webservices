@@ -51,7 +51,7 @@ export class ReservationsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Détails d’une réservation spécifique' })
+  @ApiOperation({ summary: "Détails d'une réservation spécifique" })
   @ApiResponse({
     status: 200,
     description: 'Détails de la réservation retournée',
@@ -61,14 +61,14 @@ export class ReservationsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Création d’une nouvelle réservation' })
+  @ApiOperation({ summary: "Création d'une nouvelle réservation" })
   @ApiResponse({ status: 201, description: 'Réservation créée' })
   async create(@Body() createReservationDto: CreateReservationDto) {
     return await this.reservationsService.create(createReservationDto);
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Mise à jour d’une réservation existante' })
+  @ApiOperation({ summary: "Mise à jour d'une réservation existante" })
   @ApiResponse({ status: 200, description: 'Réservation mise à jour' })
   async update(
     @Param('id') id: string,
@@ -78,7 +78,7 @@ export class ReservationsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Suppression d’une réservation' })
+  @ApiOperation({ summary: "Suppression d'une réservation" })
   @ApiResponse({ status: 204, description: 'Réservation supprimée' })
   @HttpCode(204)
   async remove(@Param('id') id: string) {
