@@ -12,24 +12,26 @@ import {
   ReservationEntity,
   RoomEntity,
   UserEntity,
+  SharedMinioModule,
 } from '@app/shared';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5433,
-      username: 'pguser',
-      password: 'pgpass',
-      database: 'pgdb',
+      host: process.env.POSTGRES_HOST || 'localhost',
+      port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
+      username: process.env.POSTGRES_USER || 'pguser',
+      password: process.env.POSTGRES_PASSWORD || 'pgpass',
+      database: process.env.POSTGRES_DB || 'pgdb',
       entities: [RoomEntity, NotifEntity, ReservationEntity, UserEntity],
       synchronize: true,
     }),
     RoomsModule,
     ReservationsModule,
     UsersModule,
-    TypeOrmModule.forFeature([NotifEntity]),
+    TypeOrmModule.forFeature([NotifEntity, ReservationEntity]),
+    SharedMinioModule,
   ],
   controllers: [NotificationsController, ExportController],
   providers: [NotificationsService, ExportService],

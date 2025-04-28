@@ -29,12 +29,30 @@ export class NotifEntity {
   @CreateDateColumn({ name: 'notification_date' })
   notificationDate: Date;
 
+  // Propriété virtuelle pour compatibilité avec NotifType
+  get notification_date(): Date {
+    return this.notificationDate;
+  }
+
+  set notification_date(value: Date) {
+    this.notificationDate = value;
+  }
+
   @ApiProperty({
     description: 'Indicates if notification has been sent',
     default: false,
   })
   @Column({ name: 'is_sent' })
   isSent: boolean;
+
+  // Propriété virtuelle pour compatibilité avec NotifType
+  get is_sent(): boolean {
+    return this.isSent;
+  }
+
+  set is_sent(value: boolean) {
+    this.isSent = value;
+  }
 
   @ManyToOne(
     () => ReservationEntity,
