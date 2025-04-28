@@ -27,14 +27,14 @@ export class NotifEntity {
 
   @ApiProperty({ description: 'Notification date', type: String })
   @CreateDateColumn({ name: 'notification_date' })
-  notification_date: Date;
+  notificationDate: Date;
 
   @ApiProperty({
     description: 'Indicates if notification has been sent',
     default: false,
   })
   @Column({ name: 'is_sent' })
-  is_sent: boolean;
+  isSent: boolean;
 
   @ManyToOne(
     () => ReservationEntity,
