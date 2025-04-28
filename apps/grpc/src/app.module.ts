@@ -1,32 +1,27 @@
-import {
-  NotifEntity,
-  ReservationEntity,
-  RoomEntity,
-  SharedMinioModule,
-  UserEntity,
-} from '@app/shared';
+import { NotifEntity, ReservationEntity, RoomEntity, SharedMinioModule, UserEntity } from '@app/shared';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ExportModule } from './export/export.module';
-import { ExtractsModule } from './extracts/extracts.module';
-import { NotificationsModule } from './notifications/notifications.module';
+import { ExportController } from './export/export.controller';
+import { ExportService } from './export/export.service';
+import { NotificationsController } from './notifications/notifications.controller';
+import { NotificationsService } from './notifications/notifications.service';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.POSTGRES_HOST || 'localhost',
-      port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
+      port: 5433, // port mappé dans docker-compose
       username: process.env.POSTGRES_USER || 'pguser',
       password: process.env.POSTGRES_PASSWORD || 'pgpass',
       database: process.env.POSTGRES_DB || 'pgdb',
-      entities: [RoomEntity, NotifEntity, ReservationEntity, UserEntity],
+      entities: [NotifEntity, ReservationEntity, UserEntity, RoomEntity],
       synchronize: true,
     }),
-    NotificationsModule,
-    ExportModule,
-    ExtractsModule,
-    SharedMinioModule,
+    TypeOrmModule.forFeature([NotifEntity]),
+    SharedMinioModule, // Module qui fournit l'accès à MinIO
   ],
+  controllers: [NotificationsController, ExportController],
+  providers: [NotificationsService, ExportService],
 })
-export class AppModule {}
+export class AppModule { }

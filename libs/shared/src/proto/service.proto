@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package api;
+package notifications;
 
 service NotificationService {
   rpc CreateNotification (CreateNotificationRequest) returns (NotificationResponse);
@@ -10,10 +10,6 @@ service NotificationService {
 
 service ExportService {
   rpc ExportReservations (ExportReservationsRequest) returns (ExportReservationsResponse);
-}
-
-service Extracts {
-  rpc GenerateUserExtract (GenerateUserExtractRequest) returns (GenerateUserExtractResponse);
 }
 
 message CreateNotificationRequest {
@@ -40,17 +36,9 @@ message NotificationResponse {
 }
 
 message ExportReservationsRequest {
-  string user_id = 1;
-}
-
-message ExportReservationsResponse {
-  string url = 1;
-}
-
-message GenerateUserExtractRequest {
   int32 user_id = 1;
 }
 
-message GenerateUserExtractResponse {
+message ExportReservationsResponse {
   string url = 1;
 }

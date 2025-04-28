@@ -1,8 +1,7 @@
 // apps/service-grpc/src/main.ts
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
-import { join } from 'path';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -10,21 +9,13 @@ async function bootstrap() {
     {
       transport: Transport.GRPC,
       options: {
-        package: 'api',
-        protoPath: join(
-          __dirname,
-          '../../..',
-          'libs/shared/src/proto/service.proto'
-        ),
-        url: process.env.GRPC_URL || 'localhost:5000',
+        package: 'notifications',
+        protoPath: process.cwd() + '/libs/shared/src/proto/service.proto',
+        url: '0.0.0.0:50051',
       },
     },
   );
   await app.listen();
-  console.log('gRPC microservice is listening on port 5000');
+  console.log('gRPC microservice is listening on port 50051');
 }
-
-bootstrap().catch(err => {
-  console.error('Erreur de démarrage:', err);
-  process.exit(1);
-});
+bootstrap();
