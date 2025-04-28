@@ -1,17 +1,18 @@
-import { UserEntity } from '@app/shared/entities/user.entity';
-import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, HttpException, Post } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from 'entities/user.entity';
 import * as querystring from 'querystring';
 import { Repository } from 'typeorm';
 
-@Injectable()
-export class AuthService {
+@Controller('auth')
+export class authController {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
-  ) { }
+  ) {}
 
-  public async login(data: any) {
+  @Post('login')
+  public async login(@Body() data: any) {
     const { username, password } = data;
 
     const response = await fetch(
@@ -31,26 +32,12 @@ export class AuthService {
       },
     );
     const responseData = await response.json();
-
-    if (responseData.error) {
-      throw new UnauthorizedException(responseData.error_description || 'Login failed');
-    }
-
-    // Essayer de trouver l'utilisateur par email (qui est généralement le username dans Keycloak)
-    const userInfo = await this.getUserInfo(responseData.access_token);
-    const user = await this.userRepo.findOne({ where: { email: userInfo.email } });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found in database');
-    }
-
-    return {
-      user,
-      tokens: responseData
-    };
+    console.log(responseData);
+    return responseData;
   }
 
-  async register(data: any) {
+  @Post('register')
+  async register(@Body() data: any) {
     const { email, password, username, firstName, lastName } = data;
 
     try {
@@ -115,63 +102,10 @@ export class AuthService {
       return this.userRepo.save({
         keycloak_id: userId,
         email,
-        username
       });
     } catch (error) {
       console.error(error);
       throw new HttpException('Registration failed', 400);
     }
-  }
-
-
-  async getUserInfo(token: string) {
-    const response = await fetch(
-      `${process.env.KEYCLOAK_URL}/realms/myrealm/protocol/openid-connect/userinfo`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-
-    if (!response.ok) {
-      throw new UnauthorizedException('Invalid token');
-    }
-
-    return await response.json();
-  }
-
-  async validateToken(token: string) {
-    try {
-      const userInfo = await this.getUserInfo(token);
-      return userInfo;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  async introspectToken(token: string) {
-    const response = await fetch(
-      `${process.env.KEYCLOAK_URL}/realms/myrealm/protocol/openid-connect/token/introspect`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: querystring.stringify({
-          client_id: process.env.KEYCLOAK_CLIENT_ID,
-          client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
-          token: token
-        }),
-      },
-    );
-
-    const introspection = await response.json();
-
-    if (!introspection.active) {
-      throw new UnauthorizedException('Token is invalid or expired');
-    }
-
-    return introspection;
   }
 }
