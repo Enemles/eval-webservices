@@ -1,44 +1,45 @@
 import {
+  Entity,
+  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  Entity,
   Index,
-  JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  JoinColumn,
 } from 'typeorm';
 import { ReservationEntity } from './reservation.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('notif')
 export class NotifEntity {
+  @ApiProperty({ description: 'Unique identifier (UUID)' })
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({
-    name: 'reservation_id',
-  })
+  @ApiProperty({ description: 'Reservation identifier' })
+  @Column({ name: 'reservation_id' })
   @Index()
   reservation_id: string;
 
+  @ApiProperty({ description: 'Notification message' })
   @Column()
   message: string;
 
-  @CreateDateColumn({
-    name: 'notification_date',
-  })
-  notification_date: Date;
+  @ApiProperty({ description: 'Notification date', type: String })
+  @CreateDateColumn({ name: 'notification_date' })
+  notificationDate: Date;
 
-  @Column({
-    name: 'is_sent',
+  @ApiProperty({
+    description: 'Indicates if notification has been sent',
+    default: false,
   })
-  is_sent: boolean;
+  @Column({ name: 'is_sent' })
+  isSent: boolean;
 
   @ManyToOne(
     () => ReservationEntity,
     (reservation) => reservation.notifications,
   )
-  @JoinColumn({
-    name: 'reservation_id',
-  })
+  @JoinColumn({ name: 'reservation_id' })
   reservation: ReservationEntity;
 }
