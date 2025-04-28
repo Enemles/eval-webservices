@@ -6,10 +6,8 @@ import {
   UserEntity,
 } from '@app/shared';
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { ExportController } from './export/export.controller';
 import { ExportService } from './export/export.service';
 import { NotificationsController } from './notifications/notifications.controller';
@@ -41,10 +39,6 @@ import { UsersModule } from './users/users.module';
   providers: [
     NotificationsService,
     ExportService,
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
   ],
 })
 export class AppModule {}

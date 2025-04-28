@@ -51,28 +51,28 @@ export class RoomsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Détails d’une salle spécifique' })
+  @ApiOperation({ summary: 'Détails d\'une salle spécifique' })
   @ApiResponse({ status: 200, description: 'Détails de la salle retournée' })
   async findOne(@Param('id') id: string) {
     return await this.roomsService.findOne(id);
   }
 
   @Post()
-  @ApiOperation({ summary: 'Création d’une nouvelle salle' })
+  @ApiOperation({ summary: 'Création d\'une nouvelle salle' })
   @ApiResponse({ status: 201, description: 'Salle créée' })
   async create(@Body() createRoomDto: CreateRoomDto) {
     return await this.roomsService.create(createRoomDto);
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Mise à jour d’une salle existante' })
+  @ApiOperation({ summary: 'Mise à jour d\'une salle existante' })
   @ApiResponse({ status: 200, description: 'Salle mise à jour' })
   async update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
     return await this.roomsService.update(id, updateRoomDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Suppression d’une salle' })
+  @ApiOperation({ summary: 'Suppression d\'une salle' })
   @ApiResponse({ status: 204, description: 'Salle supprimée' })
   @HttpCode(204)
   async remove(@Param('id') id: string) {

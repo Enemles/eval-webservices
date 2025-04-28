@@ -1,20 +1,31 @@
-import { Body, Controller, HttpException, Post } from '@nestjs/common';
+import { Body, HttpException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from 'entities/user.entity';
+import { UserEntity } from '../../entities/user.entity';
 import * as querystring from 'querystring';
 import { Repository } from 'typeorm';
 
-@Controller('auth')
-export class authController {
+@Injectable()
+export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
   ) {}
 
-  @Post('login')
-  public async login(@Body() data: any) {
-    const { username, password } = data;
+  public async login(data: any) {
+    const { username, email, password } = data;
+    const loginUsername = username || email; // Accepter soit username soit email
 
+    if (!loginUsername) {
+      return {
+        error: "invalid_request",
+        error_description: "Username or email is required"
+      };
+    }
+
+    this.logger.log(`Tentative de connexion avec username/email: ${loginUsername}`);
+    
     const response = await fetch(
       `${process.env.KEYCLOAK_URL}/realms/myrealm/protocol/openid-connect/token`,
       {
@@ -26,18 +37,17 @@ export class authController {
           grant_type: 'password',
           client_id: process.env.KEYCLOAK_CLIENT_ID,
           client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
-          username: username,
+          username: loginUsername,
           password: password,
         }),
       },
     );
     const responseData = await response.json();
-    console.log(responseData);
+    this.logger.log(`Réponse de Keycloak: ${JSON.stringify(responseData)}`);
     return responseData;
   }
 
-  @Post('register')
-  async register(@Body() data: any) {
+  async register(data: any) {
     const { email, password, username, firstName, lastName } = data;
 
     try {
@@ -73,7 +83,7 @@ export class authController {
             Authorization: `Bearer ${adminToken.access_token}`,
           },
           body: JSON.stringify({
-            username,
+            username: username || email,
             email,
             firstName,
             lastName,
@@ -106,6 +116,57 @@ export class authController {
     } catch (error) {
       console.error(error);
       throw new HttpException('Registration failed', 400);
+    }
+  }
+
+  async validateToken(token: string): Promise<any> {
+    try {
+      this.logger.log(`Validation du token: ${token.substring(0, 20)}...`);
+      
+      const response = await fetch(
+        `${process.env.KEYCLOAK_URL}/realms/myrealm/protocol/openid-connect/userinfo`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        this.logger.error(`Échec de validation du token. Statut: ${response.status}`);
+        const errorBody = await response.text();
+        this.logger.error(`Détail de l'erreur: ${errorBody}`);
+        return null;
+      }
+
+      const userInfo = await response.json();
+      this.logger.log(`UserInfo récupéré: ${JSON.stringify(userInfo)}`);
+
+      // Check if user exists in our database
+      let user = await this.userRepo.findOne({
+        where: { keycloak_id: userInfo.sub },
+      });
+
+      if (!user) {
+        this.logger.log(`Création d'un nouvel utilisateur avec keycloak_id: ${userInfo.sub}`);
+        user = await this.userRepo.save({
+          keycloak_id: userInfo.sub,
+          email: userInfo.email,
+        });
+      } else {
+        this.logger.log(`Utilisateur trouvé: ${user.id}`);
+      }
+
+      // Return merged information from keycloak and our db
+      return {
+        ...userInfo,
+        user_id: user.id,
+      };
+    } catch (error) {
+      this.logger.error(`Erreur lors de la validation du token: ${error.message}`);
+      this.logger.error(`Stack trace: ${error.stack}`);
+      return null;
     }
   }
 }

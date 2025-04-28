@@ -1,16 +1,17 @@
+import { AuthModule, ReservationEntity, SharedMinioModule, UserEntity } from '@app/shared';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { ReservationEntity, SharedMinioModule, UserEntity } from '@app/shared';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity, ReservationEntity]),
+    AuthModule,
     SharedMinioModule,
   ],
-  controllers: [UsersController],
   providers: [UsersService],
+  controllers: [UsersController],
   exports: [UsersService],
 })
 export class UsersModule {}
