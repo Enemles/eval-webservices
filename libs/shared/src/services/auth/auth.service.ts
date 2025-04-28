@@ -1,6 +1,6 @@
+import { UserEntity } from '@app/shared/entities/user.entity';
 import { Body, Controller, HttpException, Post } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from 'entities/user.entity';
 import * as querystring from 'querystring';
 import { Repository } from 'typeorm';
 
@@ -9,7 +9,7 @@ export class authController {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
-  ) {}
+  ) { }
 
   @Post('login')
   public async login(@Body() data: any) {

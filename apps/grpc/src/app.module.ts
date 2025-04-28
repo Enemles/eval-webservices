@@ -11,7 +11,7 @@ import { NotificationsService } from './notifications/notifications.service';
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.POSTGRES_HOST || 'localhost',
-      port: 5432,
+      port: 5433, // port mappé dans docker-compose
       username: process.env.POSTGRES_USER || 'pguser',
       password: process.env.POSTGRES_PASSWORD || 'pgpass',
       database: process.env.POSTGRES_DB || 'pgdb',
