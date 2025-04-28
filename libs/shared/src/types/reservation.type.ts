@@ -9,19 +9,19 @@ export class ReservationType {
   id: string;
 
   @Field()
-  user_id: string;
+  userId: string;
 
   @Field()
-  room_id: string;
+  roomId: string;
 
   @Field()
-  start_time: Date;
+  startTime: Date;
 
   @Field()
-  end_time: Date;
+  endTime: Date;
 
   @Field()
-  created_at: Date;
+  createdAt: Date;
 
   @Field()
   status: string;
@@ -39,16 +39,16 @@ export class ReservationType {
 @InputType()
 export class createReservationInput {
   @Field()
-  user_id: string;
+  userId: string;
 
   @Field()
-  room_id: string;
+  roomId: string;
 
   @Field()
-  start_time: Date;
+  startTime: Date;
 
   @Field()
-  end_time: Date;
+  endTime: Date;
 
   @Field()
   status: string;

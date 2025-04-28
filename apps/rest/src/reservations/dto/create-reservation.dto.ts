@@ -8,7 +8,7 @@ export class CreateReservationDto {
   })
   @IsNotEmpty()
   @IsString()
-  user_id: string;
+  userId: string;
 
   @ApiProperty({
     description: "Identifiant de la salle",
@@ -16,7 +16,7 @@ export class CreateReservationDto {
   })
   @IsNotEmpty()
   @IsString()
-  room_id: string;
+  roomId: string;
 
   @ApiProperty({
     description: "Date et heure de début (ISO8601)",
@@ -24,7 +24,7 @@ export class CreateReservationDto {
   })
   @IsNotEmpty()
   @IsISO8601()
-  start_time: string;
+  startTime: string;
 
   @ApiProperty({
     description: "Date et heure de fin (ISO8601)",
@@ -32,5 +32,5 @@ export class CreateReservationDto {
   })
   @IsNotEmpty()
   @IsISO8601()
-  end_time: string;
+  endTime: string;
 }

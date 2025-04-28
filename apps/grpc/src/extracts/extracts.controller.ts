@@ -8,8 +8,8 @@ export class ExtractsController {
 
   @GrpcMethod('Extracts', 'GenerateUserExtract')
   async generateUserExtract(data: {
-    user_id: number;
+    userId: number;
   }): Promise<{ url: string }> {
-    return await this.extractsService.generateUserExtract(data.user_id);
+    return await this.extractsService.generateUserExtract(data.userId);
   }
 }

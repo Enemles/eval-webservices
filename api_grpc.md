@@ -1,7 +1,10 @@
-# gRPC Service pour la Gestion des Notifications
+# gRPC Service 
  
 **Contexte** : Les notifications doivent être créées automatiquement lors de la création d’une réservation et lors de la mise à jour de son statut. Les statuts possibles sont : `pending`, `approved`, `rejected`, `cancelled`.  
 Pour la démonstration, ce microservice ne fait qu’enregistrer les notifications dans la base de données (table `notifications` vue dans le [database.md](../database.md)).
+Le microservice fournira aussi une méthode pour extraire les réservations d’un utilisateur au format CSV, la stocker sur MinIO, et renvoyer une URL de téléchargement.
+
+Le nom du package sera '**notification**'
 
 ---
 
@@ -25,20 +28,22 @@ Pour la démonstration, ce microservice ne fait qu’enregistrer les notificatio
 
 ## 2. Définition du service
 
+Service: NotificationService
+
 ### 2.1. CreateNotification
 <pre>
     input : 
     {
-        "reservation_id": number,
+        "reservationId": number,
         "message": string,
-        "notification_date": string
+        "notificationDate": string
     }
     output : 
     {
-        "id": number,
-        "reservation_id": number,
+        "id": String,
+        "reservationId": number,
         "message": string,
-        "notification_date": string
+        "notificationDate": string
     }
 </pre>
 
@@ -46,16 +51,16 @@ Pour la démonstration, ce microservice ne fait qu’enregistrer les notificatio
 <pre>
     input : 
     {
-        "id": number,
+        "id": String,
         "message": string,
-        "notification_date": string
+        "notificationDate": string
     }
     output : 
     {
-        "id": number,
-        "reservation_id": number,
+        "id": String,
+        "reservationId": number,
         "message": string,
-        "notification_date": string
+        "notificationDate": string
     }   
 </pre>
 
@@ -63,14 +68,26 @@ Pour la démonstration, ce microservice ne fait qu’enregistrer les notificatio
 <pre>
     input : 
     {
-        "id": number
+        "id": String
     }
     output : 
     {
-        "id": number,
-        "reservation_id": number,
+        "id": String,
+        "reservationId": number,
         "message": string,
-        "notification_date": string
+        "notificationDate": string
     }
 </pre>
 
+### 2.4. ExportReservations
+Service: ExportService
+<pre>
+    input : 
+    {
+        "userId": number
+    }
+    output : 
+    {
+        "url": string
+    }
+</pre>

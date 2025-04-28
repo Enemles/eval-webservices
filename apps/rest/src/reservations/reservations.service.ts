@@ -34,10 +34,10 @@ export class ReservationsService {
     createReservationDto: CreateReservationDto,
   ): Promise<ReservationEntity> {
     const reservation = this.reservationRepository.create({
-      user_id: createReservationDto.user_id,
-      room_id: createReservationDto.room_id,
-      start_time: new Date(createReservationDto.start_time),
-      end_time: new Date(createReservationDto.end_time),
+      user_id: createReservationDto.userId,
+      room_id: createReservationDto.roomId,
+      start_time: new Date(createReservationDto.startTime),
+      end_time: new Date(createReservationDto.endTime),
       status: 'pending', // Définir un statut par défaut
     });
     return await this.reservationRepository.save(reservation);
@@ -50,20 +50,20 @@ export class ReservationsService {
     const reservation = await this.findOne(id);
     
     // Mise à jour des champs si présents dans le DTO
-    if (updateReservationDto.user_id) {
-      reservation.user_id = updateReservationDto.user_id;
+    if (updateReservationDto.userId) {
+      reservation.user_id = updateReservationDto.userId;
     }
     
-    if (updateReservationDto.room_id) {
-      reservation.room_id = updateReservationDto.room_id;
+    if (updateReservationDto.roomId) {
+      reservation.room_id = updateReservationDto.roomId;
     }
     
-    if (updateReservationDto.start_time) {
-      reservation.start_time = new Date(updateReservationDto.start_time);
+    if (updateReservationDto.startTime) {
+      reservation.start_time = new Date(updateReservationDto.startTime);
     }
     
-    if (updateReservationDto.end_time) {
-      reservation.end_time = new Date(updateReservationDto.end_time);
+    if (updateReservationDto.endTime) {
+      reservation.end_time = new Date(updateReservationDto.endTime);
     }
     
     if (updateReservationDto.status) {

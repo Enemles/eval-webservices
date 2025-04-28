@@ -20,11 +20,11 @@ Réponse :
 {
   "rooms": [
     {
-      "id": number,
+      "id": string,
       "name": string,
       "capacity": number,
       "location": string,
-      "created_at": string
+      "createdAt": string
     },
     ...
   ]
@@ -35,15 +35,15 @@ Renvoie la liste paginée des salles.
 #### 2. GET /api/rooms/{id}
 <pre>
 Path parameter :
-- id : identifiant numérique de la salle
+- id : identifiant unique de la salle
 
 Réponse :
 {
-  "id": number,
+  "id": string,
   "name": string,
   "capacity": number,
   "location": string,
-  "created_at": string
+  "createdAt": string
 }
 </pre>
 Renvoie les détails d’une salle spécifique.
@@ -59,11 +59,11 @@ Body (JSON) :
 
 Réponse (201 Created) :
 {
-  "id": number,
+  "id": string,
   "name": string,
   "capacity": number,
   "location": string,
-  "created_at": string
+  "createdAt": string
 }
 </pre>
 Crée une nouvelle salle et renvoie l’objet créé.
@@ -71,7 +71,7 @@ Crée une nouvelle salle et renvoie l’objet créé.
 #### 4. PUT /api/rooms/{id}
 <pre>
 Path parameter :
-- id : identifiant numérique de la salle à modifier
+- id : identifiant unique de la salle à modifier
 
 Body (JSON) :
 {
@@ -82,11 +82,11 @@ Body (JSON) :
 
 Réponse :
 {
-  "id": number,
+  "id": string,
   "name": string,
   "capacity": number,
   "location": string,
-  "created_at": string
+  "createdAt": string
 }
 </pre>
 Met à jour les informations d’une salle existante.
@@ -94,7 +94,7 @@ Met à jour les informations d’une salle existante.
 #### 5. DELETE /api/rooms/{id}
 <pre>
 Path parameter :
-- id : identifiant numérique de la salle
+- id : identifiant unique de la salle
 
 Réponse (204 No Content) :
 Aucun corps de réponse.
@@ -111,16 +111,21 @@ Query parameters (optionnels) :
 - skip: number
 - limit: number
 
+Codes de statut possibles :
+200 OK
+400 Bad Request
+401 Unauthorized
+
 Réponse :
 {
   "reservations": [
     {
-      "id": number,
-      "user_id": number,
-      "room_id": number,
-      "start_time": string,
-      "end_time": string,
-      "created_at": string
+      "id": string,
+      "userId": number,
+      "roomId": number,
+      "startTime": string,
+      "endTime": string,
+      "createdAt": string
     },
     ...
   ]
@@ -131,16 +136,21 @@ Renvoie la liste paginée des réservations.
 #### 2. GET /api/reservations/{id}
 <pre>
 Path parameter :
-- id : identifiant numérique de la réservation
+- id : identifiant unique de la réservation
+
+Codes de statut possibles :
+200 OK
+401 Unauthorized
+404 Not Found
 
 Réponse :
 {
-  "id": number,
-  "user_id": number,
-  "room_id": number,
-  "start_time": string,
-  "end_time": string,
-  "created_at": string
+  "id": string,
+  "userId": number,
+  "roomId": number,
+  "startTime": string,
+  "endTime": string,
+  "createdAt": string
 }
 </pre>
 Renvoie les détails d’une réservation spécifique.
@@ -149,20 +159,25 @@ Renvoie les détails d’une réservation spécifique.
 <pre>
 Body (JSON) :
 {
-  "user_id": number,    // Identifiant de l'utilisateur
-  "room_id": number,    // Identifiant de la salle
-  "start_time": string, // Format ISO8601 : "YYYY-MM-DDTHH:mm:ss"
-  "end_time": string    // Idem
+  "userId": number,    // Identifiant de l'utilisateur
+  "roomId": number,    // Identifiant de la salle
+  "startTime": string, // Format ISO8601 : "YYYY-MM-DDTHH:mm:ss"
+  "endTime": string    // Idem
 }
 
-Réponse (201 Created) :
+Codes de statut possibles :
+201 Created
+400 Bad Request
+401 Unauthorized
+
+Réponse  :
 {
-  "id": number,
-  "user_id": number,
-  "room_id": number,
-  "start_time": string,
-  "end_time": string,
-  "created_at": string
+  "id": string,
+  "userId": number,
+  "roomId": number,
+  "startTime": string,
+  "endTime": string,
+  "createdAt": string
 }
 </pre>
 Crée une nouvelle réservation et renvoie l’objet créé.
@@ -170,24 +185,30 @@ Crée une nouvelle réservation et renvoie l’objet créé.
 #### 4. PUT /api/reservations/{id}
 <pre>
 Path parameter :
-- id : identifiant numérique de la réservation à modifier
+- id : identifiant unique de la réservation à modifier
+
+Codes de statut possibles :
+200 OK
+400 Bad Request
+401 Unauthorized
+404 Not Found
 
 Body (JSON) :
 {
-  "user_id": number,    // Peut être inchangé ou mis à jour
-  "room_id": number,
-  "start_time": string,
-  "end_time": string
+  "userId": number,    // Peut être inchangé ou mis à jour
+  "roomId": number,
+  "startTime": string,
+  "endTime": string
 }
 
 Réponse :
 {
-  "id": number,
-  "user_id": number,
-  "room_id": number,
-  "start_time": string,
-  "end_time": string,
-  "created_at": string
+  "id": string,
+  "userId": number,
+  "roomId": number,
+  "startTime": string,
+  "endTime": string,
+  "createdAt": string
 }
 </pre>
 Met à jour les informations d’une réservation existante.
@@ -195,9 +216,14 @@ Met à jour les informations d’une réservation existante.
 #### 5. DELETE /api/reservations/{id}
 <pre>
 Path parameter :
-- id : identifiant numérique de la réservation
+- id : identifiant unique de la réservation
 
-Réponse (204 No Content) :
+Codes de statut possibles :
+204 No Content
+401 Unauthorized
+404 Not Found
+
+Réponse :
 Aucun corps de réponse.
 </pre>
 Supprime une réservation spécifique.
@@ -214,6 +240,10 @@ Body (JSON) :
   "password": string
 }
 
+Codes de statut possibles :
+200 OK
+400 Bad Request
+
 Réponse :
 {
     "accessToken": string
@@ -226,13 +256,18 @@ Query parameters (optionnels) :
 - skip: number
 - limit: number
 
+Codes de statut possibles :
+200 OK
+400 Bad Request
+401 Unauthorized
+
 Réponse :
 {
   "users": [
     {
-      "id": number,
-      "keycloak_id": string,
-      "created_at": string,
+      "id": string,
+      "keycloakId": string,
+      "createdAt": string,
       "email": string
     },
     ...
@@ -244,17 +279,67 @@ Renvoie la liste paginée des utilisateurs (tels qu’ils sont enregistrés dans
 #### 2. GET /api/users/{id}
 <pre>
 Path parameter :
-- id : identifiant numérique de l'utilisateur
+- id : identifiant unique de l'utilisateur
+
+Codes de statut possibles :
+200 OK
+401 Unauthorized
+404 Not Found
 
 Réponse :
 {
-  "id": number,
-  "keycloak_id": string,
-  "created_at": string,
+  "id": string,
+  "keycloakId": string,
+  "createdAt": string,
   "email": string
 }
 </pre>
 Renvoie les détails d’un utilisateur spécifique.
+
+#### 3. POST /api/users
+Attention pour créer un utilisateur l'application doit être connecté avec un compte admin de Keycloak puis utiliser l'api rest pour créer un utilisateur
+<pre>
+Body (JSON) :
+{
+  username: string,
+  email: string,
+  firstName: string,
+  lastName: string,
+  password: string, 
+}
+
+Codes de statut possibles :
+201 Created
+400 Bad Request
+401 Unauthorized
+403 Forbidden
+
+Réponse :
+{
+  "id": string,
+  "keycloakId": string,
+  "createdAt": string,
+  "email": string
+}
+// Vous pouvez vérifier le contenu de init-keycloak.js
+</pre>
+
+#### 4. POST /api/users/{id}/extract
+Cette route permet de générer un fichier CSV récapitulatif des réservations d’un utilisateur, et de renvoyer une URL permettant de le télécharger.
+<pre>
+Path parameter :
+- id : identifiant unique de l'utilisateur
+
+Codes de statut possibles :
+200 OK
+401 Unauthorized
+404 Not Found
+
+Réponse :
+{
+  "url": string
+}
+</pre>
 
 ---
 

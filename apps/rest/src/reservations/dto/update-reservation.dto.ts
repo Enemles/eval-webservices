@@ -9,7 +9,7 @@ export class UpdateReservationDto {
   })
   @IsOptional()
   @IsString()
-  user_id?: string;
+  userId?: string;
 
   @ApiProperty({
     description: "Identifiant de la salle",
@@ -18,7 +18,7 @@ export class UpdateReservationDto {
   })
   @IsOptional()
   @IsString()
-  room_id?: string;
+  roomId?: string;
 
   @ApiProperty({
     description: "Date et heure de début (ISO8601)",
@@ -27,7 +27,7 @@ export class UpdateReservationDto {
   })
   @IsOptional()
   @IsISO8601()
-  start_time?: string;
+  startTime?: string;
 
   @ApiProperty({
     description: "Date et heure de fin (ISO8601)",
@@ -36,7 +36,7 @@ export class UpdateReservationDto {
   })
   @IsOptional()
   @IsISO8601()
-  end_time?: string;
+  endTime?: string;
 
   @ApiProperty({
     description: "Statut de la réservation",
