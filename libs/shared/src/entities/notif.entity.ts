@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { ReservationEntity } from './reservation.entity';
 
-@Entity('notif')
+@Entity('notifications')
 export class NotifEntity {
   @ApiProperty({ description: 'Unique identifier (UUID)' })
   @PrimaryGeneratedColumn('uuid')
