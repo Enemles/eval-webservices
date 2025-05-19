@@ -9,6 +9,7 @@ import {
   Query,
   HttpCode,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -21,6 +22,24 @@ import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+// Helper pour transformer le format snake_case en camelCase
+function formatReservation(reservation) {
+  if (!reservation) return null;
+
+  return {
+    id: reservation.id,
+    userId: reservation.user_id,
+    roomId: reservation.room_id,
+    startTime: reservation.start_time,
+    endTime: reservation.end_time,
+    createdAt: reservation.created_at,
+    status: reservation.status,
+    user: reservation.user,
+    room: reservation.room,
+    notifications: reservation.notifications,
+  };
+}
 
 @ApiTags('Reservations')
 @ApiBearerAuth()
@@ -47,7 +66,9 @@ export class ReservationsController {
   async findAll(@Query('skip') skip?: number, @Query('limit') limit?: number) {
     const s = skip ? Number(skip) : 0;
     const l = limit ? Number(limit) : 10;
-    return { reservations: await this.reservationsService.findAll(s, l) };
+    const reservations = await this.reservationsService.findAll(s, l);
+    // Retourner un tableau et non un objet avec une clé reservations
+    return reservations.map(formatReservation);
   }
 
   @Get(':id')
@@ -57,14 +78,16 @@ export class ReservationsController {
     description: 'Détails de la réservation retournée',
   })
   async findOne(@Param('id') id: string) {
-    return await this.reservationsService.findOne(id);
+    const reservation = await this.reservationsService.findOne(id);
+    return formatReservation(reservation);
   }
 
   @Post()
   @ApiOperation({ summary: "Création d'une nouvelle réservation" })
   @ApiResponse({ status: 201, description: 'Réservation créée' })
   async create(@Body() createReservationDto: CreateReservationDto) {
-    return await this.reservationsService.create(createReservationDto);
+    const reservation = await this.reservationsService.create(createReservationDto);
+    return formatReservation(reservation);
   }
 
   @Put(':id')
@@ -74,14 +97,23 @@ export class ReservationsController {
     @Param('id') id: string,
     @Body() updateReservationDto: UpdateReservationDto,
   ) {
-    return await this.reservationsService.update(id, updateReservationDto);
+    const reservation = await this.reservationsService.update(id, updateReservationDto);
+    return formatReservation(reservation);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: "Suppression d'une réservation" })
   @ApiResponse({ status: 204, description: 'Réservation supprimée' })
+  @ApiResponse({ status: 404, description: 'Réservation non trouvée' })
   @HttpCode(204)
   async remove(@Param('id') id: string) {
-    await this.reservationsService.remove(id);
+    try {
+      await this.reservationsService.remove(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error; // Laisse passer l'erreur 404
+      }
+      throw error; // Pour les autres erreurs
+    }
   }
 }

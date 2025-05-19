@@ -4,6 +4,7 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ReservationEntity } from './reservation.entity';
 
@@ -14,6 +15,7 @@ export class UserEntity {
 
   @Column({
     name: 'keycloak_id',
+    unique: true,
   })
   keycloak_id: string;
 
@@ -24,6 +26,11 @@ export class UserEntity {
     name: 'created_at',
   })
   created_at: Date;
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+  })
+  updated_at: Date;
 
   @OneToMany(() => ReservationEntity, (reservation) => reservation.user, {
     cascade: true,

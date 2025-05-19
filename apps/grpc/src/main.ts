@@ -10,7 +10,7 @@ async function bootstrap() {
     {
       transport: Transport.GRPC,
       options: {
-        package: 'api',
+        package: 'notification',
         protoPath: join(
           __dirname,
           '../../..',

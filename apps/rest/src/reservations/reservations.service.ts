@@ -9,9 +9,12 @@ import {
 } from '@app/shared';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class ReservationsService {
+  private readonly logger = new Logger(ReservationsService.name);
+
   constructor(
     @InjectRepository(ReservationEntity)
     private reservationRepository: Repository<ReservationEntity>,
@@ -151,7 +154,30 @@ export class ReservationsService {
   }
 
   async remove(id: string): Promise<void> {
-    const reservation = await this.findOne(id);
-    await this.reservationRepository.remove(reservation);
+    try {
+      // Vérifier si la réservation existe
+      const exists = await this.reservationRepository.findOne({
+        where: { id },
+        relations: ['notifications'],
+      });
+      
+      if (!exists) {
+        throw new NotFoundException(`Réservation avec l'ID ${id} non trouvée`);
+      }
+      
+      // 1. Supprimer d'abord les notifications liées
+      if (exists.notifications && exists.notifications.length > 0) {
+        await this.notifRepository.remove(exists.notifications);
+      }
+      
+      // 2. Puis supprimer la réservation
+      await this.reservationRepository.remove(exists);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error; // Propager l'erreur 404
+      }
+      this.logger.error(`Erreur lors de la suppression de la réservation: ${error.message}`);
+      throw error;
+    }
   }
 }

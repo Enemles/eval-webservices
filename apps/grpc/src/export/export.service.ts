@@ -53,7 +53,7 @@ export class ExportService {
 
     // Transformer les données pour le format CSV
     const reservationData = reservations.map((reservation) => ({
-      id: reservation.id,
+      reservationId: reservation.id,
       userId: reservation.user_id,
       roomId: reservation.room_id,
       startTime: reservation.start_time.toISOString(),
@@ -64,7 +64,7 @@ export class ExportService {
 
     // Convertir les données en CSV
     const fields = [
-      'id',
+      'reservationId',
       'userId',
       'roomId',
       'startTime',

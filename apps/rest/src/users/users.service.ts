@@ -149,21 +149,21 @@ export class UsersService {
 
       // Transformer les données pour le format CSV
       const csvData = reservations.map((reservation) => ({
-        reservation_id: reservation.id,
-        user_id: reservation.user_id,
-        room_id: reservation.room_id,
-        start_time: reservation.start_time.toISOString(),
-        end_time: reservation.end_time.toISOString(),
+        reservationId: reservation.id,
+        userId: reservation.user_id,
+        roomId: reservation.room_id,
+        startTime: reservation.start_time.toISOString(),
+        endTime: reservation.end_time.toISOString(),
         status: reservation.status,
       }));
 
       // Convertir les données en CSV
       const fields = [
-        'reservation_id',
-        'user_id',
-        'room_id',
-        'start_time',
-        'end_time',
+        'reservationId',
+        'userId',
+        'roomId',
+        'startTime',
+        'endTime',
         'status',
       ];
       const opts = { fields };

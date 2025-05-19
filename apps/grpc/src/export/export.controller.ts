@@ -13,12 +13,12 @@ export class ExportController {
     this.logger.log(`Objet data complet reçu : ${JSON.stringify(data)}`);
     
     // Récupérer l'ID utilisateur à partir de user_id ou userId
-    const userId = data.user_id || data.userId;
+    const userId = data.userId || data.user_id;
     
     this.logger.log(`ID utilisateur extrait : ${userId}`);
     
     if (!userId) {
-      throw new Error('ID utilisateur non fourni. Utilisez "user_id" dans votre requête.');
+      throw new Error('ID utilisateur non fourni. Utilisez "user_id" ou "userId" dans votre requête.');
     }
     
     return await this.exportService.exportReservations({ userId });
