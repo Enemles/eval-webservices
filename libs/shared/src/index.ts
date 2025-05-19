@@ -3,6 +3,7 @@ export * from './auth/current-user.decorator';
 export * from './auth/graphql-auth.guard';
 export * from './auth/jwt-auth.guard';
 export * from './auth/public.decorator';
+export * from './auth/roles.decorator';
 export * from './entities/notif.entity';
 export * from './entities/reservation.entity';
 export * from './entities/room.entity';

@@ -13,13 +13,13 @@ export class NotificationsService {
   async createNotification(data: {
     reservation_id: string;
     message: string;
-    notificationDate: string;
+    notification_date: string;
   }): Promise<NotifEntity> {
     const notification = this.notificationRepository.create({
       reservation_id: data.reservation_id,
       message: data.message,
-      notificationDate: new Date(data.notificationDate),
-      isSent: false,
+      notification_date: new Date(data.notification_date),
+      is_sent: false,
     });
     return await this.notificationRepository.save(notification);
   }
@@ -27,7 +27,7 @@ export class NotificationsService {
   async updateNotification(data: {
     id: string;
     message: string;
-    notificationDate: string;
+    notification_date: string;
   }): Promise<NotifEntity> {
     const notification = await this.notificationRepository.findOne({
       where: { id: data.id },
@@ -36,7 +36,7 @@ export class NotificationsService {
       throw new NotFoundException('Notification not found');
     }
     notification.message = data.message;
-    notification.notificationDate = new Date(data.notificationDate);
+    notification.notification_date = new Date(data.notification_date);
     return await this.notificationRepository.save(notification);
   }
 

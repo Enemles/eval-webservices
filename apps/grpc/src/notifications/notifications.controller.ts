@@ -9,11 +9,16 @@ export class NotificationsController {
 
   @GrpcMethod('NotificationService', 'CreateNotification')
   async createNotification(data: {
-    reservation_id: string;
+    reservationId: string;
     message: string;
     notificationDate: string;
   }): Promise<NotifEntity> {
-    return await this.notificationsService.createNotification(data);
+    const entityData = {
+      reservation_id: data.reservationId,
+      message: data.message,
+      notification_date: data.notificationDate
+    };
+    return await this.notificationsService.createNotification(entityData);
   }
 
   @GrpcMethod('NotificationService', 'UpdateNotification')
@@ -22,7 +27,12 @@ export class NotificationsController {
     message: string;
     notificationDate: string;
   }): Promise<NotifEntity> {
-    return await this.notificationsService.updateNotification(data);
+    const entityData = {
+      id: data.id,
+      message: data.message,
+      notification_date: data.notificationDate
+    };
+    return await this.notificationsService.updateNotification(entityData);
   }
 
   @GrpcMethod('NotificationService', 'GetNotification')

@@ -3,8 +3,11 @@ import {
   ReservationEntity,
   RoomEntity,
   UserEntity,
+  JwtAuthGuard,
+  AuthModule as SharedAuthModule,
 } from '@app/shared';
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ExportController } from './export/export.controller';
@@ -25,8 +28,9 @@ import { UsersModule } from './users/users.module';
       password: 'pgpass',
       database: 'pgdb',
       entities: [RoomEntity, NotifEntity, ReservationEntity, UserEntity],
-      synchronize: true,
+      synchronize: false,
     }),
+    SharedAuthModule,
     RoomsModule,
     ReservationsModule,
     UsersModule,
@@ -36,6 +40,10 @@ import { UsersModule } from './users/users.module';
   providers: [
     NotificationsService,
     ExportService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
 })
 export class AppModule { }

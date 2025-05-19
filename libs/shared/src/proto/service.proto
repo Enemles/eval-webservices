@@ -13,15 +13,15 @@ service ExportService {
 }
 
 message CreateNotificationRequest {
-  int32 reservation_id = 1;
+  int32 reservationId = 1;
   string message = 2;
-  string notification_date = 3;
+  string notificationDate = 3;
 }
 
 message UpdateNotificationRequest {
   int32 id = 1;
   string message = 2;
-  string notification_date = 3;
+  string notificationDate = 3;
 }
 
 message GetNotificationRequest {
@@ -30,15 +30,23 @@ message GetNotificationRequest {
 
 message NotificationResponse {
   int32 id = 1;
-  int32 reservation_id = 2;
+  int32 reservationId = 2;
   string message = 3;
-  string notification_date = 4;
+  string notificationDate = 4;
 }
 
 message ExportReservationsRequest {
-  int32 user_id = 1;
+  string userId = 1;
 }
 
 message ExportReservationsResponse {
+  string url = 1;
+}
+
+message GenerateUserExtractRequest {
+  int32 userId = 1;
+}
+
+message GenerateUserExtractResponse {
   string url = 1;
 }

@@ -7,7 +7,7 @@ type RoomType {
   name: String!
   capacity: Float!
   location: String!
-  created_at: DateTime!
+  createdAt: DateTime!
   reservations: [ReservationType!]!
 }
 
@@ -18,19 +18,19 @@ scalar DateTime
 
 type UserType {
   id: ID!
-  keycloak_id: String!
+  keycloakId: String!
   email: String!
-  created_at: DateTime!
+  createdAt: DateTime!
   reservations: [ReservationType!]!
 }
 
 type ReservationType {
   id: ID!
-  user_id: String!
-  room_id: String!
-  start_time: DateTime!
-  end_time: DateTime!
-  created_at: DateTime!
+  userId: String!
+  roomId: String!
+  startTime: DateTime!
+  endTime: DateTime!
+  createdAt: DateTime!
   status: String!
   user: UserType!
   room: RoomType!
@@ -39,17 +39,17 @@ type ReservationType {
 
 type NotifType {
   id: ID!
-  reservation_id: String!
+  reservationId: String!
   message: String!
-  notification_date: DateTime!
-  is_sent: Boolean!
+  notificationDate: DateTime!
+  isSent: Boolean!
   reservation: ReservationType!
 }
 
 type Query {
   listUsers: [UserType!]!
   user(id: String!): UserType
-  listRooms: [RoomType!]!
+  listRooms(skip: Int, limit: Int): [RoomType!]!
   room(id: String!): RoomType
   Notifs: [NotifType!]!
   Notif(id: String!): NotifType
@@ -60,9 +60,9 @@ type Query {
 type Mutation {
   updateUser(id: String!, input: createUserInput!): UserType!
   deleteUser(id: String!): UserType!
-  createRoom(input: createRoomInput!): RoomType!
-  updateRoom(id: String!, input: createRoomInput!): RoomType!
-  deleteRoom(id: String!): RoomType!
+  createRoom(name: String!, capacity: Int!, location: String!): RoomType!
+  updateRoom(id: String!, name: String, capacity: Int, location: String): RoomType!
+  deleteRoom(id: String!): Boolean!
   createNotif(input: createNotifInput!): NotifType!
   updateNotif(id: String!, input: createNotifInput!): NotifType!
   deleteNotif(id: String!): NotifType!
@@ -72,27 +72,21 @@ type Mutation {
 }
 
 input createUserInput {
-  keycloak_id: String!
+  keycloakId: String!
   email: String!
 }
 
-input createRoomInput {
-  name: String!
-  capacity: Float!
-  location: String!
-}
-
 input createNotifInput {
-  reservation_id: String!
+  reservationId: String!
   message: String!
-  notification_date: DateTime!
-  is_sent: Boolean!
+  notificationDate: DateTime!
+  isSent: Boolean!
 }
 
 input createReservationInput {
-  user_id: String!
-  room_id: String!
-  start_time: DateTime!
-  end_time: DateTime!
+  userId: String!
+  roomId: String!
+  startTime: DateTime!
+  endTime: DateTime!
   status: String!
 }

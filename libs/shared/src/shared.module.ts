@@ -20,13 +20,13 @@ import { SharedService } from './shared.service';
     AuthModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'pguser',
-      password: 'pgpass',
-      database: 'pgdb',
+      host: process.env.POSTGRES_HOST || 'localhost',
+      port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
+      username: process.env.POSTGRES_USER || 'pguser',
+      password: process.env.POSTGRES_PASSWORD || 'pgpass',
+      database: process.env.POSTGRES_DB || 'pgdb',
       entities: [UserEntity, RoomEntity, ReservationEntity, NotifEntity],
-      synchronize: true,
+      synchronize: false,
     }),
     TypeOrmModule.forFeature([
       UserEntity,
@@ -54,4 +54,4 @@ import { SharedService } from './shared.service';
   ],
   controllers: [AuthController],
 })
-export class SharedModule { }
+export class SharedModule {}

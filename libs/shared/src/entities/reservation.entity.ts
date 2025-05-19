@@ -11,7 +11,7 @@ import { NotifEntity } from './notif.entity';
 import { RoomEntity } from './room.entity';
 import { UserEntity } from './user.entity';
 
-@Entity('reservation')
+@Entity('reservations')
 export class ReservationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
