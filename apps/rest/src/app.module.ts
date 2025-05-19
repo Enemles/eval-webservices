@@ -29,7 +29,7 @@ import { UsersModule } from './users/users.module';
       password: process.env.POSTGRES_PASSWORD || 'pgpass',
       database: process.env.POSTGRES_DB || 'pgdb',
       entities: [RoomEntity, NotifEntity, ReservationEntity, UserEntity],
-      synchronize: true,
+      synchronize: false,
     }),
     SharedAuthModule,
     RoomsModule,

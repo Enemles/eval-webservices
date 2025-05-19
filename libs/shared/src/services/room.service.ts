@@ -1,5 +1,4 @@
 import { InjectRepository } from '@nestjs/typeorm';
-
 import { Repository } from 'typeorm';
 import { RoomEntity } from '../entities/room.entity';
 import { RoomType, createRoomInput } from '../types/room.type';
@@ -12,15 +11,26 @@ export class RoomService {
     private readonly RoomRepo: Repository<RoomEntity>,
   ) {}
 
-  async listRooms(): Promise<RoomType[]> {
-    const rooms = await this.RoomRepo.find({
+  async listRooms(skip?: number, limit?: number): Promise<RoomType[]> {
+    const options = {
       relations: ['reservations', 'reservations.room'],
-    });
+    };
+
+    // Ajouter la pagination si spécifiée
+    if (skip !== undefined && limit !== undefined) {
+      options['skip'] = skip;
+      options['take'] = limit;
+    }
+
+    const rooms = await this.RoomRepo.find(options);
     return rooms.map((room) => this.mapEntityToType(room));
   }
   
   async room(id: string): Promise<RoomType> {
-    const room = await this.RoomRepo.findOneOrFail({ where: { id } });
+    const room = await this.RoomRepo.findOneOrFail({
+      where: { id },
+      relations: ['reservations', 'reservations.room', 'reservations.user'],
+    });
     return this.mapEntityToType(room);
   }
 
@@ -33,7 +43,10 @@ export class RoomService {
     return this.mapEntityToType(savedRoom);
   }
 
-  async updateRoom(id: string, input: createRoomInput): Promise<RoomType> {
+  async updateRoom(
+    id: string,
+    input: Partial<createRoomInput>,
+  ): Promise<RoomType> {
     await this.RoomRepo.update({ id }, input);
     const room = await this.RoomRepo.findOneOrFail({ where: { id } });
     return this.mapEntityToType(room);
@@ -57,18 +70,20 @@ export class RoomService {
     roomType.createdAt = entity.created_at;
     
     // Convertir les réservations si elles sont chargées
-    roomType.reservations = entity.reservations ? 
-      entity.reservations.map((res) => this.mapReservationEntityToType(res)) : 
-      [];
+    roomType.reservations = entity.reservations
+      ? entity.reservations.map((res) => this.mapReservationEntityToType(res))
+      : [];
     
     return roomType;
   }
 
-  private mapReservationEntityToType(entity: ReservationEntity): ReservationType {
+  private mapReservationEntityToType(
+    entity: ReservationEntity,
+  ): ReservationType {
     const reservationType = new ReservationType();
     reservationType.id = entity.id;
-    reservationType.userId = entity.user.id;
-    reservationType.roomId = entity.room.id;
+    reservationType.userId = entity.user?.id || '';
+    reservationType.roomId = entity.room?.id || '';
     reservationType.startTime = entity.start_time;
     reservationType.endTime = entity.end_time;
     reservationType.createdAt = entity.created_at;

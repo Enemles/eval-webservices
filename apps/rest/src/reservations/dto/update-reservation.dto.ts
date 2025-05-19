@@ -9,7 +9,7 @@ export class UpdateReservationDto {
   })
   @IsOptional()
   @IsString()
-  userId?: string;
+  user_id?: string;
 
   @ApiProperty({
     description: "Identifiant de la salle",
@@ -18,7 +18,7 @@ export class UpdateReservationDto {
   })
   @IsOptional()
   @IsString()
-  roomId?: string;
+  room_id?: string;
 
   @ApiProperty({
     description: "Date et heure de début (ISO8601)",
@@ -27,7 +27,7 @@ export class UpdateReservationDto {
   })
   @IsOptional()
   @IsISO8601()
-  startTime?: string;
+  start_time?: string;
 
   @ApiProperty({
     description: "Date et heure de fin (ISO8601)",
@@ -36,7 +36,7 @@ export class UpdateReservationDto {
   })
   @IsOptional()
   @IsISO8601()
-  endTime?: string;
+  end_time?: string;
 
   @ApiProperty({
     description: "Statut de la réservation",
@@ -48,4 +48,21 @@ export class UpdateReservationDto {
   @IsString()
   @IsIn(['pending', 'approved', 'rejected', 'cancelled'])
   status?: string;
+
+  // Compatibilité avec les noms en camelCase
+  @IsOptional()
+  @IsString()
+  userId?: string;
+
+  @IsOptional()
+  @IsString()
+  roomId?: string;
+
+  @IsOptional()
+  @IsISO8601()
+  startTime?: string;
+
+  @IsOptional()
+  @IsISO8601()
+  endTime?: string;
 }

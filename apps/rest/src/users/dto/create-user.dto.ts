@@ -1,26 +1,33 @@
-import { IsNotEmpty, IsString, IsEmail } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
-  @IsNotEmpty()
+  @ApiProperty({ description: "Nom d'utilisateur", required: false })
+  @IsOptional()
   @IsString()
-  username: string;
+  username?: string;
 
-  @IsNotEmpty()
+  @ApiProperty({ description: "Identifiant Keycloak", required: false })
+  @IsOptional()
   @IsString()
-  keycloak_id: string;
+  keycloak_id?: string;
 
+  @ApiProperty({ description: "Email de l'utilisateur", required: true })
   @IsNotEmpty()
   @IsEmail()
   email: string;
 
-  @IsNotEmpty()
+  @ApiProperty({ description: "Prénom de l'utilisateur", required: false })
+  @IsOptional()
   @IsString()
-  firstName: string;
+  firstName?: string;
 
-  @IsNotEmpty()
+  @ApiProperty({ description: "Nom de famille de l'utilisateur", required: false })
+  @IsOptional()
   @IsString()
-  lastName: string;
+  lastName?: string;
 
+  @ApiProperty({ description: "Mot de passe", required: true })
   @IsNotEmpty()
   @IsString()
   password: string;

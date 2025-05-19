@@ -21,7 +21,7 @@ import { NotificationsModule } from './notifications/notifications.module';
       password: process.env.POSTGRES_PASSWORD || 'pgpass',
       database: process.env.POSTGRES_DB || 'pgdb',
       entities: [RoomEntity, NotifEntity, ReservationEntity, UserEntity],
-      synchronize: true,
+      synchronize: false,
     }),
     NotificationsModule,
     ExportModule,

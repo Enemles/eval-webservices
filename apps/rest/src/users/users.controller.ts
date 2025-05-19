@@ -6,6 +6,7 @@ import {
   Param,
   Query,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -51,7 +52,12 @@ export class UsersController {
   async findAll(@Query('skip') skip?: number, @Query('limit') limit?: number) {
     const s = skip ? Number(skip) : 0;
     const l = limit ? Number(limit) : 10;
-    return { users: await this.usersService.findAll(s, l) };
+    const users = await this.usersService.findAll(s, l);
+    
+    // Log pour le débogage
+    console.log('Users found:', users.map(u => u.id).join(', '));
+    
+    return { users };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -76,11 +82,27 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(':id/extract')
+  @Post(':id/extract')
   @ApiBearerAuth()
   @ApiOperation({ summary: "Extraction CSV des réservations d'un utilisateur" })
-  @ApiResponse({ status: 200, description: 'URL du fichier CSV retournée' })
+  @ApiResponse({ status: 201, description: 'URL du fichier CSV retournée' })
   async extract(@Param('id') id: string) {
     return await this.usersService.extract(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('email/:email')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Recherche d'un utilisateur par email" })
+  @ApiResponse({
+    status: 200,
+    description: "Détails de l'utilisateur retournés",
+  })
+  async findByEmail(@Param('email') email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException(`Utilisateur avec l'email ${email} non trouvé`);
+    }
+    return user;
   }
 }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsISO8601 } from 'class-validator';
+import { IsNotEmpty, IsString, IsISO8601, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateReservationDto {
@@ -8,7 +8,7 @@ export class CreateReservationDto {
   })
   @IsNotEmpty()
   @IsString()
-  userId: string;
+  user_id: string;
 
   @ApiProperty({
     description: "Identifiant de la salle",
@@ -16,7 +16,7 @@ export class CreateReservationDto {
   })
   @IsNotEmpty()
   @IsString()
-  roomId: string;
+  room_id: string;
 
   @ApiProperty({
     description: "Date et heure de début (ISO8601)",
@@ -24,7 +24,7 @@ export class CreateReservationDto {
   })
   @IsNotEmpty()
   @IsISO8601()
-  startTime: string;
+  start_time: string;
 
   @ApiProperty({
     description: "Date et heure de fin (ISO8601)",
@@ -32,5 +32,31 @@ export class CreateReservationDto {
   })
   @IsNotEmpty()
   @IsISO8601()
-  endTime: string;
+  end_time: string;
+
+  @ApiProperty({
+    description: "Statut de la réservation",
+    example: "pending",
+    required: false
+  })
+  @IsOptional()
+  @IsString()
+  status?: string;
+
+  // Compatibilité avec les noms en camelCase
+  @IsOptional()
+  @IsString()
+  userId?: string;
+
+  @IsOptional()
+  @IsString()
+  roomId?: string;
+
+  @IsOptional()
+  @IsISO8601()
+  startTime?: string;
+
+  @IsOptional()
+  @IsISO8601()
+  endTime?: string;
 }
