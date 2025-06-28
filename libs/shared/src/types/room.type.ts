@@ -15,7 +15,7 @@ export class RoomType {
   @Field()
   location: string;
 
-  @Field()
+  @Field({ name: 'created_at' })
   createdAt: Date;
 
   @Field(() => [ReservationType])

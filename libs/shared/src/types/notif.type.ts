@@ -6,16 +6,16 @@ export class NotifType {
   @Field(() => ID)
   id: string;
 
-  @Field()
+  @Field({ name: 'reservation_id' })
   reservationId: string;
 
   @Field()
   message: string;
 
-  @Field()
+  @Field({ name: 'notification_date' })
   notificationDate: Date;
 
-  @Field()
+  @Field({ name: 'is_sent' })
   isSent: boolean;
 
   @Field(() => ReservationType)
@@ -24,15 +24,15 @@ export class NotifType {
 
 @InputType()
 export class createNotifInput {
-  @Field()
+  @Field({ name: 'reservation_id' })
   reservationId: string;
 
   @Field()
   message: string;
 
-  @Field()
+  @Field({ name: 'notification_date' })
   notificationDate: Date;
 
-  @Field()
+  @Field({ name: 'is_sent' })
   isSent: boolean;
 }

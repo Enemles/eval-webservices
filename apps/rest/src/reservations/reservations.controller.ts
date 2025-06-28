@@ -108,7 +108,7 @@ export class ReservationsController {
   @HttpCode(204)
   async remove(@Param('id') id: string) {
     try {
-      await this.reservationsService.remove(id);
+    await this.reservationsService.remove(id);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error; // Laisse passer l'erreur 404

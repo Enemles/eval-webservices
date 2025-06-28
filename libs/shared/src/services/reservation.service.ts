@@ -1,3 +1,5 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ReservationEntity } from '../entities/reservation.entity';
 import {
@@ -70,15 +72,31 @@ function mapNotifEntityToType(entity: NotifEntity): NotifType {
   return notifType;
 }
 
+@Injectable()
 export class ReservationService {
   constructor(
+    @InjectRepository(ReservationEntity)
     private readonly ReservationRepo: Repository<ReservationEntity>,
+    @InjectRepository(NotifEntity)
+    private readonly NotifRepo: Repository<NotifEntity>,
   ) {}
 
-  async listReservations(): Promise<ReservationType[]> {
-    const reservations = await this.ReservationRepo.find({
-      relations: ['notifications', 'notifications.reservation', 'user', 'room'],
-    });
+  async listReservations(skip?: number, limit?: number): Promise<ReservationType[]> {
+    const queryBuilder = this.ReservationRepo.createQueryBuilder('reservation')
+      .leftJoinAndSelect('reservation.notifications', 'notifications')
+      .leftJoinAndSelect('reservation.user', 'user')
+      .leftJoinAndSelect('reservation.room', 'room')
+      .orderBy('reservation.created_at', 'DESC');
+    
+    if (skip !== undefined) {
+      queryBuilder.offset(skip);
+    }
+    
+    if (limit !== undefined) {
+      queryBuilder.limit(limit);
+    }
+    
+    const reservations = await queryBuilder.getMany();
     
     return reservations.map(reservation => mapReservationEntityToType(reservation));
   }
@@ -105,6 +123,15 @@ export class ReservationService {
     
     const newReservation = this.ReservationRepo.create(entityData);
     const reservation = await this.ReservationRepo.save(newReservation);
+    
+    // Créer automatiquement une notification pour la nouvelle réservation
+    const notification = this.NotifRepo.create({
+      reservation_id: reservation.id,
+      message: `Réservation créée pour la salle`,
+      notification_date: new Date(),
+      is_sent: false,
+    });
+    await this.NotifRepo.save(notification);
     
     const savedReservation = await this.ReservationRepo.findOneOrFail({
       where: { id: reservation.id },
@@ -143,6 +170,11 @@ export class ReservationService {
     if (!reservation) {
       return false;
     }
+    
+    // Supprimer d'abord les notifications liées
+    await this.NotifRepo.delete({ reservation_id: id });
+    
+    // Puis supprimer la réservation
     await this.ReservationRepo.delete({ id });
     return true;
   }

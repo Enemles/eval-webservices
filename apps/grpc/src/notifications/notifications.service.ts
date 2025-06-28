@@ -15,9 +15,14 @@ export class NotificationsService {
   async createNotification(data: any): Promise<NotifEntity> {
     this.logger.log(`Données reçues pour la création: ${JSON.stringify(data)}`);
     
-    // Adapter les données au format attendu par l'entité
+    const reservationId = data.reservationId || data.reservation_id;
+    
+    if (!reservationId) {
+      throw new Error('reservationId est requis pour créer une notification');
+    }
+    
     const entityData = {
-      reservation_id: data.reservationId || data.reservation_id,
+      reservation_id: reservationId,
       message: data.message,
       notification_date: data.notificationDate || data.notification_date || new Date().toISOString(),
     };
@@ -30,14 +35,21 @@ export class NotificationsService {
       notification_date: new Date(entityData.notification_date),
       is_sent: false,
     });
-    return await this.notificationRepository.save(notification);
+    
+    const savedNotification = await this.notificationRepository.save(notification);
+    this.logger.log(`Notification créée avec ID: ${savedNotification.id}`);
+    
+    return savedNotification;
   }
 
   async updateNotification(data: any): Promise<NotifEntity> {
     this.logger.log(`Données reçues pour la mise à jour: ${JSON.stringify(data)}`);
     
-    // Adapter les données au format attendu par l'entité
     const id = data.id;
+    if (!id) {
+      throw new Error('id est requis pour mettre à jour une notification');
+    }
+    
     const entityData = {
       message: data.message,
       notification_date: data.notificationDate || data.notification_date || new Date().toISOString(),
@@ -47,24 +59,33 @@ export class NotificationsService {
       where: { id },
     });
     if (!notification) {
-      throw new NotFoundException('Notification not found');
+      throw new NotFoundException(`Notification avec ID ${id} non trouvée`);
     }
     notification.message = entityData.message;
     notification.notification_date = new Date(entityData.notification_date);
-    return await this.notificationRepository.save(notification);
+    
+    const updatedNotification = await this.notificationRepository.save(notification);
+    this.logger.log(`Notification mise à jour: ${updatedNotification.id}`);
+    
+    return updatedNotification;
   }
 
   async getNotification(data: any): Promise<NotifEntity> {
     this.logger.log(`Données reçues pour la récupération: ${JSON.stringify(data)}`);
     
     const id = data.id;
+    if (!id) {
+      throw new Error('id est requis pour récupérer une notification');
+    }
     
     const notification = await this.notificationRepository.findOne({
       where: { id },
     });
     if (!notification) {
-      throw new NotFoundException('Notification not found');
+      throw new NotFoundException(`Notification avec ID ${id} non trouvée`);
     }
+    
+    this.logger.log(`Notification trouvée: ${notification.id}`);
     return notification;
   }
 }

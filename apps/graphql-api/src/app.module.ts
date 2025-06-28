@@ -31,11 +31,10 @@ import { UserResolver } from './resolver/user.resolver';
     RoomResolver,
     NotifResolver,
     ReservationResolver,
-    // Commenté temporairement pour les tests
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: GqlAuthGuard,
-    // }
+    {
+      provide: APP_GUARD,
+      useClass: GqlAuthGuard,
+    }
   ],
 })
 export class AppModule { }

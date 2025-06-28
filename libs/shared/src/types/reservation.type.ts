@@ -8,19 +8,19 @@ export class ReservationType {
   @Field(() => ID)
   id: string;
 
-  @Field()
+  @Field({ name: 'user_id' })
   userId: string;
 
-  @Field()
+  @Field({ name: 'room_id' })
   roomId: string;
 
-  @Field()
+  @Field({ name: 'start_time' })
   startTime: Date;
 
-  @Field()
+  @Field({ name: 'end_time' })
   endTime: Date;
 
-  @Field()
+  @Field({ name: 'created_at' })
   createdAt: Date;
 
   @Field()
