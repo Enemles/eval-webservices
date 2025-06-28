@@ -54,30 +54,44 @@ VALUES ($1, $2, NOW(), NOW(), 'pending', NOW()) RETURNING *`,
         const extractRequest = {
             userId,
         };
-        await exportService.ExportReservations(extractRequest,async  (err, response) => {
-            expect(response).toHaveProperty('url');
-            expect(response.url).toMatch(/http/);
-            expect(err).toBeNull();
-            const file = await axios.get(response.url);
-            expect(file.status).toBe(200);
+        
+        return new Promise((resolve, reject) => {
+            exportService.ExportReservations(extractRequest, async (err, response) => {
+                try {
+                    expect(err).toBeNull();
+                    expect(response).toHaveProperty('url');
+                    expect(response.url).toMatch(/http/);
+                    
+                    const file = await axios.get(response.url);
+                    expect(file.status).toBe(200);
 
-            const fileStream = new Readable();
-            fileStream.push(file.data);
-            fileStream.push(null);
+                    const fileStream = new Readable();
+                    fileStream.push(file.data);
+                    fileStream.push(null);
 
-            const results = [];
-            fileStream.pipe(csv())
-                .on('data', (data) => results.push(data))
-                .on('end', () => {
-                    // Vérifiez le contenu du fichier CSV
-                    expect(results.length).toBeGreaterThan(0);
-                    expect(results[0]).toHaveProperty('reservationId');
-                    expect(results[0]).toHaveProperty('userId');
-                    expect(results[0]).toHaveProperty('roomId');
-                    expect(results[0]).toHaveProperty('startTime');
-                    expect(results[0]).toHaveProperty('endTime');
-                    expect(results[0]).toHaveProperty('status');
-                });
+                    const results = [];
+                    fileStream.pipe(csv())
+                        .on('data', (data) => results.push(data))
+                        .on('end', () => {
+                            try {
+                                // Vérifiez le contenu du fichier CSV
+                                expect(results.length).toBeGreaterThan(0);
+                                expect(results[0]).toHaveProperty('reservationId');
+                                expect(results[0]).toHaveProperty('userId');
+                                expect(results[0]).toHaveProperty('roomId');
+                                expect(results[0]).toHaveProperty('startTime');
+                                expect(results[0]).toHaveProperty('endTime');
+                                expect(results[0]).toHaveProperty('status');
+                                resolve();
+                            } catch (error) {
+                                reject(error);
+                            }
+                        })
+                        .on('error', reject);
+                } catch (error) {
+                    reject(error);
+                }
+            });
         });
-    }) ;
+    });
 });

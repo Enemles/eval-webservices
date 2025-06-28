@@ -42,7 +42,7 @@ describe('Reservations E2E Tests', () => {
 
     it('should create a reservation using the created room', async () => {
         const mutation = `
-      mutation CreateReservation($user_id: ID!, $room_id: ID!, $start_time: DateTime!, $end_time: DateTime!) {
+      mutation CreateReservation($user_id: String!, $room_id: String!, $start_time: String!, $end_time: String!) {
         createReservation(user_id: $user_id, room_id: $room_id, start_time: $start_time, end_time: $end_time) {
           id
           user_id
@@ -103,7 +103,7 @@ describe('Reservations E2E Tests', () => {
 
     it('should get the created reservation by ID', async () => {
         const query = `
-      query Reservation($id: ID!) {
+      query Reservation($id: String!) {
         reservation(id: $id) {
           id
           user_id
@@ -125,7 +125,7 @@ describe('Reservations E2E Tests', () => {
 
     it('should update the reservation times', async () => {
         const mutation = `
-      mutation UpdateReservation($id: ID!, $start_time: DateTime, $end_time: DateTime) {
+      mutation UpdateReservation($id: String!, $start_time: String, $end_time: String) {
         updateReservation(id: $id, start_time: $start_time, end_time: $end_time) {
           id
           user_id
@@ -186,7 +186,7 @@ describe('Reservations E2E Tests', () => {
 
     it('should delete the created reservation', async () => {
         const mutation = `
-      mutation DeleteReservation($id: ID!) {
+      mutation DeleteReservation($id: String!) {
         deleteReservation(id: $id)
       }
     `;
@@ -200,7 +200,7 @@ describe('Reservations E2E Tests', () => {
 
     it('should verify the reservation is deleted', async () => {
         const query = `
-      query Reservation($id: ID!) {
+      query Reservation($id: String!) {
         reservation(id: $id) {
           id
         }

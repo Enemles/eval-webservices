@@ -3,7 +3,7 @@ import {
   createReservationInput,
   ReservationType,
 } from '@app/shared/types/reservation.type';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 @Resolver(() => ReservationType)
 export class ReservationResolver {
@@ -11,14 +11,14 @@ export class ReservationResolver {
 
   @Query(() => [ReservationType])
   async listReservations(
-    @Args('skip', { nullable: true }) skip?: number,
-    @Args('limit', { nullable: true }) limit?: number,
+    @Args('skip', { nullable: true, type: () => Int }) skip?: number,
+    @Args('limit', { nullable: true, type: () => Int }) limit?: number,
   ): Promise<ReservationType[]> {
     return await this.reservationService.listReservations(skip, limit);
   }
 
   @Query(() => ReservationType, { nullable: true })
-  async reservation(@Args('id') id: string): Promise<ReservationType> {
+  async reservation(@Args('id') id: string): Promise<ReservationType | null> {
     return await this.reservationService.reservation(id);
   }
 
@@ -47,6 +47,10 @@ export class ReservationResolver {
   ): Promise<ReservationType> {
     // Récupérer la réservation existante pour garder les autres champs
     const existingReservation = await this.reservationService.reservation(id);
+    
+    if (!existingReservation) {
+      throw new Error(`Reservation with id ${id} not found`);
+    }
 
     const input: createReservationInput = {
       userId: existingReservation.userId,

@@ -45,6 +45,8 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.27.7",
+    "@babel/preset-env": "^7.27.2",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",
@@ -57,6 +59,7 @@
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "axios": "^1.9.0",
+    "babel-jest": "^30.0.2",
     "csv-parser": "^3.2.0",
     "dotenv": "^16.5.0",
     "eslint": "^9.18.0",
@@ -86,13 +89,15 @@
     "rootDir": ".",
     "testRegex": "(.*\\.(test|spec))\\.(ts|js)$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.ts$": "ts-jest",
+      "^.+\\.js$": "babel-jest"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
+    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
     "roots": [
       "<rootDir>/apps/",
       "<rootDir>/libs/",

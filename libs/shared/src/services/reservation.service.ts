@@ -101,11 +101,16 @@ export class ReservationService {
     return reservations.map(reservation => mapReservationEntityToType(reservation));
   }
 
-  async reservation(id: string): Promise<ReservationType> {
-    const reservation = await this.ReservationRepo.findOneOrFail({
+  async reservation(id: string): Promise<ReservationType | null> {
+    const reservation = await this.ReservationRepo.findOne({
       where: { id },
       relations: ['notifications', 'notifications.reservation', 'user', 'room'],
     });
+    
+    if (!reservation) {
+      return null;
+    }
+    
     return mapReservationEntityToType(reservation);
   }
 

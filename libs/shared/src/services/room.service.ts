@@ -25,13 +25,13 @@ export class RoomService {
     const rooms = await this.RoomRepo.find(options);
     return rooms.map((room) => this.mapEntityToType(room));
   }
-  
-  async room(id: string): Promise<RoomType> {
-    const room = await this.RoomRepo.findOneOrFail({
+
+  async room(id: string): Promise<RoomType | null> {
+    const room = await this.RoomRepo.findOne({
       where: { id },
       relations: ['reservations', 'reservations.room', 'reservations.user'],
     });
-    return this.mapEntityToType(room);
+    return room ? this.mapEntityToType(room) : null;
   }
 
   async createRoom(input: createRoomInput): Promise<RoomType> {

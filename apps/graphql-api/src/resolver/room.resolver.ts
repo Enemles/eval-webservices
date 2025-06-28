@@ -15,7 +15,7 @@ export class RoomResolver {
   }
 
   @Query(() => RoomType, { nullable: true })
-  async room(@Args('id') id: string): Promise<RoomType> {
+  async room(@Args('id') id: string): Promise<RoomType | null> {
     return await this.roomService.room(id);
   }
 

@@ -53,7 +53,7 @@ type Query {
   room(id: String!): RoomType
   Notifs: [NotifType!]!
   Notif(id: String!): NotifType
-  listReservations(skip: Float, limit: Float): [ReservationType!]!
+  listReservations(skip: Int, limit: Int): [ReservationType!]!
   reservation(id: String!): ReservationType
 }
 

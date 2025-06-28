@@ -45,7 +45,7 @@ describe('Rooms E2E Tests', () => {
 
   it('should get the created room by ID', async () => {
     const query = `
-      query Room($id: ID!) {
+      query Room($id: String!) {
         room(id: $id) {
           id
           name
@@ -68,7 +68,7 @@ describe('Rooms E2E Tests', () => {
 
   it('should update the room', async () => {
     const mutation = `
-      mutation UpdateRoom($id: ID!, $name: String, $capacity: Int, $location: String) {
+      mutation UpdateRoom($id: String!, $name: String, $capacity: Int, $location: String) {
         updateRoom(id: $id, name: $name, capacity: $capacity, location: $location) {
           id
           name
@@ -127,7 +127,7 @@ describe('Rooms E2E Tests', () => {
 
   it('should delete the created room', async () => {
     const mutation = `
-      mutation DeleteRoom($id: ID!) {
+      mutation DeleteRoom($id: String!) {
         deleteRoom(id: $id)
       }
     `;
@@ -142,7 +142,7 @@ describe('Rooms E2E Tests', () => {
     // should throw a 404
     try {
       const query = `
-      query Room($id: ID!) {
+      query Room($id: String!) {
         room(id: $id) {
           id
           name

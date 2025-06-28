@@ -13,6 +13,7 @@ describe('Reservations E2E Tests', () => {
   let token;
   let createdRoomId;
   let userId;
+  let createdReservationId;
 
   beforeAll(async () => {
     token = getUsrToken();
