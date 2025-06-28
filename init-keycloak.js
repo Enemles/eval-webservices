@@ -5,7 +5,7 @@ const KcAdminClient = require('keycloak-admin').default;
     const kcAdminClient = new KcAdminClient();
 
     // Variables that might change
-    const KEYCLOAK_URL = 'http://localhost:8080';
+    const KEYCLOAK_URL = process.env.KEYCLOAK_URL || 'http://localhost:8080';
     const ADMIN_USERNAME = 'admin';
     const ADMIN_PASSWORD = 'admin';
     const REALM_NAME = 'myrealm';

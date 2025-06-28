@@ -17,7 +17,7 @@ process.env.KEYCLOAK_ADMIN_PASSWORD = 'admin';
 // URLs des APIs
 process.env.API_REST_URL = 'http://localhost:3000';
 process.env.API_GRAPHQL_URL = 'http://localhost:4000/graphql';
-process.env.PROTO_URL = 'localhost:5000';
+process.env.PROTO_URL = 'localhost:50051';
 process.env.PROTO_PATH = '../../../libs/shared/src/proto/service.proto';
 
 // Base de données de test

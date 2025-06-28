@@ -1,4 +1,7 @@
+version: '3.8'
+
 services:
+  # Infrastructure services
   db:
     image: postgres:15
     environment:
@@ -6,25 +9,158 @@ services:
       POSTGRES_PASSWORD: pgpass
       POSTGRES_DB: pgdb
     ports:
-        - "5432:5432"
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pguser -d pgdb"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     command: start-dev
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/pgdb
+      KC_DB_USERNAME: pguser
+      KC_DB_PASSWORD: pgpass
     ports:
-    - "8080:8080"
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
   minio:
     image: minio/minio
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     ports:
-        - "9000:9000"
-        - "9090:9090"
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - minio_data:/data
     command:
-    - server
-    - /data
-    - --console-address
-    - ":9090"
+      - server
+      - /data
+      - --console-address
+      - ":9090"
+    networks:
+      - app-network
+
+  # Initialization services  
+  init-keycloak:
+    build:
+      context: .
+      dockerfile: apps/rest/Dockerfile
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+    depends_on:
+      - keycloak
+    command: ["sh", "-c", "sleep 45 && node /app/init-keycloak.js"]
+    networks:
+      - app-network
+    restart: "no"
+
+  # Application services  
+  rest-api:
+    build:
+      context: .
+      dockerfile: apps/rest/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      # Database
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pgpass
+      POSTGRES_DB: pgdb
+      # Keycloak
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: myrealm
+      KEYCLOAK_CLIENT_ID: myclient
+      KEYCLOAK_CLIENT_SECRET: mysecret
+      # gRPC
+      GRPC_URL: grpc-service:5000
+      # Other
+      NODE_ENV: development
+    depends_on:
+      - db
+      - keycloak
+      - grpc-service
+      - init-keycloak
+    networks:
+      - app-network
+
+  graphql-api:
+    build:
+      context: .
+      dockerfile: apps/graphql-api/Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      # Database
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pgpass
+      POSTGRES_DB: pgdb
+      # Keycloak
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: myrealm
+      KEYCLOAK_CLIENT_ID: myclient
+      KEYCLOAK_CLIENT_SECRET: mysecret
+      # Other
+      PORT: 4000
+      NODE_ENV: development
+    depends_on:
+      - db
+      - keycloak
+      - init-keycloak
+    networks:
+      - app-network
+
+  grpc-service:
+    build:
+      context: .
+      dockerfile: apps/grpc/Dockerfile
+    ports:
+      - "50051:5000"
+    environment:
+      # Database
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pgpass
+      POSTGRES_DB: pgdb
+      # gRPC
+      GRPC_URL: 0.0.0.0:5000
+      # MinIO
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      # Other
+      NODE_ENV: development
+    depends_on:
+      - db
+      - minio
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  app-network:
+    driver: bridge
