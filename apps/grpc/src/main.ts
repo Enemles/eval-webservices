@@ -16,12 +16,12 @@ async function bootstrap() {
           '../../..',
           'libs/shared/src/proto/service.proto'
         ),
-        url: process.env.GRPC_URL || 'localhost:5000',
+        url: process.env.GRPC_URL || 'localhost:50051',
       },
     },
   );
   await app.listen();
-  console.log('gRPC microservice is listening on port 5000');
+  console.log('gRPC microservice is listening on port 50051');
 }
 
 bootstrap().catch(err => {

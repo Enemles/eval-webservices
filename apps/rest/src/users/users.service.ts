@@ -32,7 +32,9 @@ interface UserResponse {
 // Mock du service gRPC pour éviter les erreurs si le service n'est pas disponible
 class MockExtractsService implements ExtractsService {
   generateUserExtract(data: { user_id: number }): Observable<{ url: string }> {
-    return of({ url: `http://minio/extract/${data.user_id}.csv` });
+    const minioEndpoint = process.env.MINIO_ENDPOINT || 'minio';
+    const minioPort = process.env.MINIO_PORT || '9000';
+    return of({ url: `http://${minioEndpoint}:${minioPort}/extract/${data.user_id}.csv` });
   }
 }
 

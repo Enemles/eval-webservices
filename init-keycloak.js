@@ -1,4 +1,3 @@
-// configure-keycloak.js
 const KcAdminClient = require('keycloak-admin').default;
 
 (async () => {

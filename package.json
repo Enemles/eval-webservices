@@ -23,6 +23,7 @@
     "test:docker": "./test-e2e.sh"
   },
   "dependencies": {
+    "@apollo/server": "^4.12.2",
     "@grpc/grpc-js": "^1.13.2",
     "@nestjs/apollo": "^13.0.4",
     "@nestjs/common": "^11.0.1",
@@ -35,6 +36,7 @@
     "@nestjs/typeorm": "^11.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "graphql": "^16.11.0",
     "json2csv": "6.0.0-alpha.2",
     "keycloak-admin": "^1.14.22",
     "minio": "^8.0.5",
@@ -62,7 +64,7 @@
     "axios": "^1.9.0",
     "babel-jest": "^30.0.2",
     "csv-parser": "^3.2.0",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.6.1",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
@@ -80,32 +82,5 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": ".",
-    "testRegex": "(.*\\.(test|spec))\\.(ts|js)$",
-    "transform": {
-      "^.+\\.ts$": "ts-jest",
-      "^.+\\.js$": "babel-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "./coverage",
-    "testEnvironment": "node",
-    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
-    "roots": [
-      "<rootDir>/apps/",
-      "<rootDir>/libs/",
-      "<rootDir>/src/"
-    ],
-    "moduleNameMapper": {
-      "^@app/shared(|/.*)$": "<rootDir>/libs/shared/src/$1"
-    }
   }
 }

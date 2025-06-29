@@ -43,6 +43,7 @@ services:
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_SERVER_URL: http://localhost:9000
     ports:
       - "9000:9000"
       - "9090:9090"
@@ -91,6 +92,9 @@ services:
       KEYCLOAK_CLIENT_SECRET: mysecret
       # gRPC
       GRPC_URL: grpc-service:5000
+      # MinIO - utiliser localhost pour que les URLs générées soient correctes
+      MINIO_ENDPOINT: localhost
+      MINIO_PORT: 9000
       # Other
       NODE_ENV: development
     depends_on:
@@ -100,6 +104,8 @@ services:
       - init-keycloak
     networks:
       - app-network
+    extra_hosts:
+      - "localhost:host-gateway"
 
   graphql-api:
     build:
@@ -144,8 +150,8 @@ services:
       POSTGRES_DB: pgdb
       # gRPC
       GRPC_URL: 0.0.0.0:5000
-      # MinIO
-      MINIO_ENDPOINT: minio
+      # MinIO - utiliser localhost pour que les URLs générées soient correctes
+      MINIO_ENDPOINT: localhost
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
@@ -156,6 +162,8 @@ services:
       - minio
     networks:
       - app-network
+    extra_hosts:
+      - "localhost:host-gateway"
 
 volumes:
   postgres_data:

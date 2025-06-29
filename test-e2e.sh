@@ -53,8 +53,8 @@ else
 fi
 
 # Attendre encore un peu pour s'assurer que l'init est terminé
-echo -e "${YELLOW}⏳ Attente de l'initialisation complète (10s)...${NC}"
-sleep 10
+echo -e "${YELLOW}⏳ Attente de l'initialisation complète (5s)...${NC}"
+sleep 5
 
 # Lancer les tests
 echo -e "${GREEN}🧪 Lancement des tests E2E...${NC}"

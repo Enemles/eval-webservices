@@ -12,16 +12,15 @@ export class RoomService {
   ) {}
 
   async listRooms(skip?: number, limit?: number): Promise<RoomType[]> {
-    const options = {
-      relations: ['reservations', 'reservations.room'],
-    };
+    const options: { skip?: number; take?: number } = {};
 
     // Ajouter la pagination si spécifiée
     if (skip !== undefined && limit !== undefined) {
-      options['skip'] = skip;
-      options['take'] = limit;
+      options.skip = skip;
+      options.take = limit;
     }
 
+    // Simplifier - ne pas charger les relations pour la liste
     const rooms = await this.RoomRepo.find(options);
     return rooms.map((room) => this.mapEntityToType(room));
   }
@@ -68,12 +67,12 @@ export class RoomService {
     roomType.capacity = entity.capacity;
     roomType.location = entity.location;
     roomType.createdAt = entity.created_at;
-    
+
     // Convertir les réservations si elles sont chargées
     roomType.reservations = entity.reservations
       ? entity.reservations.map((res) => this.mapReservationEntityToType(res))
       : [];
-    
+
     return roomType;
   }
 
