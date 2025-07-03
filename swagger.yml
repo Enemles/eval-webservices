@@ -1,0 +1,901 @@
+openapi: 3.0.0
+info:
+  title: Plateforme de réservation de salles - API REST
+  description: |
+    API REST pour la gestion des réservations de salles.
+    
+    **Architecture:**
+    - API REST (port 3000) - Documentation actuelle
+    - API GraphQL (port 4000) - Interface alternative
+    - Service gRPC (port 50051) - Microservices internes
+    
+    **Authentification:**
+    La plupart des endpoints nécessitent un token JWT Bearer obtenu via login.
+    
+    **Accès Swagger UI:** http://localhost:3000/docs
+  version: 1.0.0
+  contact:
+    name: "Équipe de développement"
+    email: "dev@example.com"
+
+servers:
+  - url: http://localhost:3000/api
+    description: Serveur de développement
+
+security:
+  - BearerAuth: []
+
+paths:
+  # Root endpoint
+  /:
+    get:
+      tags:
+        - Root
+      summary: Message de bienvenue
+      description: Endpoint racine qui retourne un message de bienvenue
+      security: []
+      responses:
+        '200':
+          description: Message de bienvenue
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Hello World!"
+
+  # Auth endpoints
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Connexion utilisateur (Auth service)
+      description: Authentification via le service d'authentification partagé
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: Token JWT pour l'authentification
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Identifiants invalides
+
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Inscription utilisateur
+      description: Création d'un nouveau compte utilisateur
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+      responses:
+        '201':
+          description: Utilisateur créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Données invalides
+
+  # Users endpoints
+  /users/login:
+    post:
+      tags:
+        - Users
+      summary: Connexion utilisateur (User service)
+      description: Authentification via le service utilisateurs
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: Token JWT retourné
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: Token JWT pour l'authentification
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Identifiants invalides
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Liste paginée des utilisateurs
+      description: Récupère la liste des utilisateurs avec pagination
+      parameters:
+        - name: skip
+          in: query
+          description: Nombre d'éléments à ignorer
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Nombre maximum d'éléments à retourner
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Liste des utilisateurs retournée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '401':
+          description: Token manquant ou invalide
+
+    post:
+      tags:
+        - Users
+      summary: Création d'un nouvel utilisateur (admin)
+      description: Crée un nouvel utilisateur (nécessite des privilèges admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+      responses:
+        '201':
+          description: Utilisateur créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Données invalides
+        '401':
+          description: Token manquant ou invalide
+        '403':
+          description: Privilèges insuffisants
+
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Détails d'un utilisateur spécifique
+      description: Récupère les détails d'un utilisateur par son ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant unique de l'utilisateur
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détails de l'utilisateur retournés
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Utilisateur non trouvé
+        '401':
+          description: Token manquant ou invalide
+
+  /users/{id}/extract:
+    post:
+      tags:
+        - Users
+      summary: Extraction CSV des réservations d'un utilisateur
+      description: Génère un fichier CSV avec les réservations de l'utilisateur et retourne une URL pré-signée
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant unique de l'utilisateur
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: URL du fichier CSV retournée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                    description: URL pré-signée du fichier CSV
+                    example: "http://localhost:9000/exports/reservations_user123.csv?signature=..."
+        '404':
+          description: Utilisateur non trouvé
+        '401':
+          description: Token manquant ou invalide
+
+  /users/email/{email}:
+    get:
+      tags:
+        - Users
+      summary: Recherche d'un utilisateur par email
+      description: Trouve un utilisateur par son adresse email
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: Adresse email de l'utilisateur
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Détails de l'utilisateur retournés
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Utilisateur non trouvé
+        '401':
+          description: Token manquant ou invalide
+
+  # Rooms endpoints
+  /rooms:
+    get:
+      tags:
+        - Rooms
+      summary: Liste paginée des salles
+      description: Récupère la liste des salles avec pagination
+      parameters:
+        - name: skip
+          in: query
+          description: Nombre d'éléments à ignorer
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Nombre maximum d'éléments à retourner
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Liste des salles retournée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rooms:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Room'
+        '401':
+          description: Token manquant ou invalide
+
+    post:
+      tags:
+        - Rooms
+      summary: Création d'une nouvelle salle
+      description: Crée une nouvelle salle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoomDto'
+      responses:
+        '201':
+          description: Salle créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '400':
+          description: Données invalides
+        '401':
+          description: Token manquant ou invalide
+
+  /rooms/{id}:
+    get:
+      tags:
+        - Rooms
+      summary: Détails d'une salle spécifique
+      description: Récupère les détails d'une salle par son ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant unique de la salle
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détails de la salle retournée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '404':
+          description: Salle non trouvée
+        '401':
+          description: Token manquant ou invalide
+
+    put:
+      tags:
+        - Rooms
+      summary: Mise à jour d'une salle existante
+      description: Met à jour les informations d'une salle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant unique de la salle
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoomDto'
+      responses:
+        '200':
+          description: Salle mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '400':
+          description: Données invalides
+        '404':
+          description: Salle non trouvée
+        '401':
+          description: Token manquant ou invalide
+
+    delete:
+      tags:
+        - Rooms
+      summary: Suppression d'une salle
+      description: Supprime une salle du système
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant unique de la salle
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Salle supprimée
+        '404':
+          description: Salle non trouvée
+        '401':
+          description: Token manquant ou invalide
+
+  # Reservations endpoints
+  /reservations:
+    get:
+      tags:
+        - Reservations
+      summary: Liste paginée des réservations
+      description: Récupère la liste des réservations avec pagination
+      parameters:
+        - name: skip
+          in: query
+          description: Nombre d'éléments à ignorer
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Nombre maximum d'éléments à retourner
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Liste des réservations retournée
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '401':
+          description: Token manquant ou invalide
+
+    post:
+      tags:
+        - Reservations
+      summary: Création d'une nouvelle réservation
+      description: Crée une nouvelle réservation de salle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReservationDto'
+      responses:
+        '201':
+          description: Réservation créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Données invalides ou conflit d'horaires
+        '401':
+          description: Token manquant ou invalide
+
+  /reservations/{id}:
+    get:
+      tags:
+        - Reservations
+      summary: Détails d'une réservation spécifique
+      description: Récupère les détails d'une réservation par son ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant unique de la réservation
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détails de la réservation retournée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '404':
+          description: Réservation non trouvée
+        '401':
+          description: Token manquant ou invalide
+
+    put:
+      tags:
+        - Reservations
+      summary: Mise à jour d'une réservation existante
+      description: Met à jour une réservation existante
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant unique de la réservation
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateReservationDto'
+      responses:
+        '200':
+          description: Réservation mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Données invalides ou conflit d'horaires
+        '404':
+          description: Réservation non trouvée
+        '401':
+          description: Token manquant ou invalide
+
+    delete:
+      tags:
+        - Reservations
+      summary: Suppression d'une réservation
+      description: Supprime une réservation du système
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant unique de la réservation
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Réservation supprimée
+        '404':
+          description: Réservation non trouvée
+        '401':
+          description: Token manquant ou invalide
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Authentification JWT Bearer token.
+        
+        **Pour obtenir un token :**
+        1. POST /users/login ou /auth/login avec email/password
+        2. Utiliser le token dans le header: `Authorization: Bearer <token>`
+
+  schemas:
+    # User schemas
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique de l'utilisateur
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        username:
+          type: string
+          description: Nom d'utilisateur
+          example: "john_doe"
+        email:
+          type: string
+          format: email
+          description: Adresse email
+          example: "john.doe@example.com"
+        firstName:
+          type: string
+          description: Prénom
+          example: "John"
+        lastName:
+          type: string
+          description: Nom de famille
+          example: "Doe"
+        keycloak_id:
+          type: string
+          description: Identifiant Keycloak
+          example: "keycloak_12345"
+        created_at:
+          type: string
+          format: date-time
+          description: Date de création
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Date de dernière modification
+          example: "2024-01-15T10:30:00Z"
+
+    CreateUserDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          description: Nom d'utilisateur
+          example: "john_doe"
+        keycloak_id:
+          type: string
+          description: Identifiant Keycloak
+          example: "keycloak_12345"
+        email:
+          type: string
+          format: email
+          description: Email de l'utilisateur
+          example: "john.doe@example.com"
+        firstName:
+          type: string
+          description: Prénom de l'utilisateur
+          example: "John"
+        lastName:
+          type: string
+          description: Nom de famille de l'utilisateur
+          example: "Doe"
+        password:
+          type: string
+          description: Mot de passe
+          example: "securePassword123"
+
+    LoginDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email de l'utilisateur
+          example: "user@example.com"
+        password:
+          type: string
+          description: Mot de passe de l'utilisateur
+          example: "password123"
+
+    # Room schemas
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique de la salle
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        name:
+          type: string
+          description: Nom de la salle
+          example: "Salle de réunion A"
+        capacity:
+          type: integer
+          description: Capacité de la salle
+          minimum: 1
+          example: 10
+        location:
+          type: string
+          description: Localisation de la salle
+          example: "Bâtiment A - 1er étage"
+        created_at:
+          type: string
+          format: date-time
+          description: Date de création
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Date de dernière modification
+          example: "2024-01-15T10:30:00Z"
+
+    CreateRoomDto:
+      type: object
+      required:
+        - name
+        - capacity
+      properties:
+        name:
+          type: string
+          description: Nom de la salle
+          example: "Salle de réunion A"
+        capacity:
+          type: integer
+          description: Capacité de la salle
+          minimum: 1
+          example: 10
+        location:
+          type: string
+          description: Localisation de la salle
+          example: "Bâtiment A - 1er étage"
+
+    UpdateRoomDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nom de la salle
+          example: "Salle de réunion B"
+        capacity:
+          type: integer
+          description: Capacité de la salle
+          minimum: 1
+          example: 15
+        location:
+          type: string
+          description: Localisation de la salle
+          example: "Bâtiment B - 2ème étage"
+
+    # Reservation schemas
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique de la réservation
+          example: "550e8400-e29b-41d4-a716-446655440002"
+        userId:
+          type: string
+          format: uuid
+          description: Identifiant de l'utilisateur
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        roomId:
+          type: string
+          format: uuid
+          description: Identifiant de la salle
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        startTime:
+          type: string
+          format: date-time
+          description: Date et heure de début
+          example: "2024-07-15T09:00:00Z"
+        endTime:
+          type: string
+          format: date-time
+          description: Date et heure de fin
+          example: "2024-07-15T11:00:00Z"
+        status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+          description: Statut de la réservation
+          example: "pending"
+        createdAt:
+          type: string
+          format: date-time
+          description: Date de création
+          example: "2024-01-15T10:30:00Z"
+        user:
+          $ref: '#/components/schemas/User'
+        room:
+          $ref: '#/components/schemas/Room'
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+
+    CreateReservationDto:
+      type: object
+      required:
+        - user_id
+        - room_id
+        - start_time
+        - end_time
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: Identifiant de l'utilisateur
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        room_id:
+          type: string
+          format: uuid
+          description: Identifiant de la salle
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        start_time:
+          type: string
+          format: date-time
+          description: Date et heure de début (ISO8601)
+          example: "2024-07-15T09:00:00Z"
+        end_time:
+          type: string
+          format: date-time
+          description: Date et heure de fin (ISO8601)
+          example: "2024-07-15T11:00:00Z"
+        status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+          description: Statut de la réservation
+          example: "pending"
+          default: "pending"
+
+    UpdateReservationDto:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: Identifiant de l'utilisateur
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        room_id:
+          type: string
+          format: uuid
+          description: Identifiant de la salle
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        start_time:
+          type: string
+          format: date-time
+          description: Date et heure de début (ISO8601)
+          example: "2024-07-15T09:00:00Z"
+        end_time:
+          type: string
+          format: date-time
+          description: Date et heure de fin (ISO8601)
+          example: "2024-07-15T11:00:00Z"
+        status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+          description: Statut de la réservation
+          example: "approved"
+
+    # Notification schema
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique de la notification
+          example: "550e8400-e29b-41d4-a716-446655440003"
+        reservation_id:
+          type: string
+          format: uuid
+          description: Identifiant de la réservation associée
+          example: "550e8400-e29b-41d4-a716-446655440002"
+        message:
+          type: string
+          description: Message de la notification
+          example: "Votre réservation a été approuvée"
+        notification_date:
+          type: string
+          format: date-time
+          description: Date de la notification
+          example: "2024-01-15T10:30:00Z"
+        created_at:
+          type: string
+          format: date-time
+          description: Date de création
+          example: "2024-01-15T10:30:00Z"
+
+    # Error schemas
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Message d'erreur
+          example: "Une erreur est survenue"
+        statusCode:
+          type: integer
+          description: Code de statut HTTP
+          example: 400
+        error:
+          type: string
+          description: Type d'erreur
+          example: "Bad Request"
+
+tags:
+  - name: Root
+    description: Endpoint racine
+  - name: Authentication
+    description: Authentification et gestion des sessions
+  - name: Users
+    description: Gestion des utilisateurs
+  - name: Rooms
+    description: Gestion des salles
+  - name: Reservations
+    description: Gestion des réservations 
