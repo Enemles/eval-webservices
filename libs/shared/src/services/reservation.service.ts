@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ReservationEntity } from '../entities/reservation.entity';
@@ -74,6 +74,8 @@ function mapNotifEntityToType(entity: NotifEntity): NotifType {
 
 @Injectable()
 export class ReservationService {
+  private readonly logger = new Logger(ReservationService.name);
+
   constructor(
     @InjectRepository(ReservationEntity)
     private readonly ReservationRepo: Repository<ReservationEntity>,
@@ -82,105 +84,167 @@ export class ReservationService {
   ) {}
 
   async listReservations(skip?: number, limit?: number): Promise<ReservationType[]> {
-    const queryBuilder = this.ReservationRepo.createQueryBuilder('reservation')
-      .leftJoinAndSelect('reservation.notifications', 'notifications')
-      .leftJoinAndSelect('reservation.user', 'user')
-      .leftJoinAndSelect('reservation.room', 'room')
-      .orderBy('reservation.created_at', 'DESC');
+    this.logger.log(`listReservations: skip=${skip}, limit=${limit}`);
     
-    if (skip !== undefined) {
-      queryBuilder.offset(skip);
+    try {
+      const queryBuilder = this.ReservationRepo.createQueryBuilder('reservation')
+        .leftJoinAndSelect('reservation.notifications', 'notifications')
+        .leftJoinAndSelect('reservation.user', 'user')
+        .leftJoinAndSelect('reservation.room', 'room')
+        .orderBy('reservation.created_at', 'DESC');
+      
+      if (skip !== undefined) {
+        queryBuilder.offset(skip);
+      }
+      
+      if (limit !== undefined) {
+        queryBuilder.limit(limit);
+      }
+      
+      const reservations = await queryBuilder.getMany();
+      this.logger.log(`listReservations: ${reservations.length} réservations trouvées`);
+      
+      return reservations.map(reservation => mapReservationEntityToType(reservation));
+    } catch (error) {
+      this.logger.error(`Erreur listReservations: ${error.message}`, error.stack);
+      throw error;
     }
-    
-    if (limit !== undefined) {
-      queryBuilder.limit(limit);
-    }
-    
-    const reservations = await queryBuilder.getMany();
-    
-    return reservations.map(reservation => mapReservationEntityToType(reservation));
   }
 
   async reservation(id: string): Promise<ReservationType | null> {
-    const reservation = await this.ReservationRepo.findOne({
-      where: { id },
-      relations: ['notifications', 'notifications.reservation', 'user', 'room'],
-    });
+    this.logger.log(`reservation: recherche de la réservation avec ID ${id}`);
     
-    if (!reservation) {
-      return null;
+    try {
+      const reservation = await this.ReservationRepo.findOne({
+        where: { id },
+        relations: ['notifications', 'notifications.reservation', 'user', 'room'],
+      });
+      
+      if (!reservation) {
+        this.logger.warn(`reservation: réservation avec ID ${id} non trouvée`);
+        return null;
+      }
+      
+      this.logger.log(`reservation: réservation avec ID ${id} trouvée`);
+      return mapReservationEntityToType(reservation);
+    } catch (error) {
+      this.logger.error(`Erreur reservation: ${error.message}`, error.stack);
+      throw error;
     }
-    
-    return mapReservationEntityToType(reservation);
   }
 
   async createReservation(
     input: createReservationInput,
   ): Promise<ReservationType> {
-    // Convertir de camelCase à snake_case pour l'entité
-    const entityData = {
-      user_id: input.userId,
-      room_id: input.roomId,
-      start_time: input.startTime,
-      end_time: input.endTime,
-      status: input.status,
-    };
+    this.logger.log(`createReservation: création d'une nouvelle réservation - ${JSON.stringify(input)}`);
     
-    const newReservation = this.ReservationRepo.create(entityData);
-    const reservation = await this.ReservationRepo.save(newReservation);
-    
-    // Créer automatiquement une notification pour la nouvelle réservation
-    const notification = this.NotifRepo.create({
-      reservation_id: reservation.id,
-      message: `Réservation créée pour la salle`,
-      notification_date: new Date(),
-      is_sent: false,
-    });
-    await this.NotifRepo.save(notification);
-    
-    const savedReservation = await this.ReservationRepo.findOneOrFail({
-      where: { id: reservation.id },
-      relations: ['notifications', 'notifications.reservation', 'user', 'room'],
-    });
-    
-    return mapReservationEntityToType(savedReservation);
+    try {
+      // Convertir de camelCase à snake_case pour l'entité
+      const entityData = {
+        user_id: input.userId,
+        room_id: input.roomId,
+        start_time: input.startTime,
+        end_time: input.endTime,
+        status: input.status,
+      };
+      
+      const newReservation = this.ReservationRepo.create(entityData);
+      const reservation = await this.ReservationRepo.save(newReservation);
+      this.logger.log(`createReservation: réservation créée avec ID ${reservation.id}`);
+      
+      // Créer automatiquement une notification pour la nouvelle réservation
+      const notification = this.NotifRepo.create({
+        reservation_id: reservation.id,
+        message: `Réservation créée pour la salle`,
+        notification_date: new Date(),
+        is_sent: false,
+      });
+      await this.NotifRepo.save(notification);
+      this.logger.log(`createReservation: notification créée pour la réservation ${reservation.id}`);
+      
+      const savedReservation = await this.ReservationRepo.findOne({
+        where: { id: reservation.id },
+        relations: ['notifications', 'notifications.reservation', 'user', 'room'],
+      });
+      
+      if (!savedReservation) {
+        throw new Error('Failed to retrieve saved reservation');
+      }
+      
+      return mapReservationEntityToType(savedReservation);
+    } catch (error) {
+      this.logger.error(`Erreur createReservation: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async updateReservation(
     id: string,
     input: createReservationInput,
   ): Promise<ReservationType> {
-    // Convertir de camelCase à snake_case pour l'entité
-    const entityData = {
-      user_id: input.userId,
-      room_id: input.roomId,
-      start_time: input.startTime,
-      end_time: input.endTime,
-      status: input.status,
-    };
+    this.logger.log(`updateReservation: mise à jour de la réservation ${id} - ${JSON.stringify(input)}`);
     
-    await this.ReservationRepo.update({ id }, entityData);
-    const updatedReservation = await this.ReservationRepo.findOneOrFail({ 
-      where: { id },
-      relations: ['notifications', 'notifications.reservation', 'user', 'room'],
-    });
-    
-    return mapReservationEntityToType(updatedReservation);
+    try {
+      // Vérifier que la réservation existe
+      const existingReservation = await this.ReservationRepo.findOne({ where: { id } });
+      if (!existingReservation) {
+        this.logger.warn(`updateReservation: réservation avec ID ${id} non trouvée`);
+        throw new NotFoundException(`Reservation with ID ${id} not found`);
+      }
+      
+      // Convertir de camelCase à snake_case pour l'entité
+      const entityData = {
+        user_id: input.userId,
+        room_id: input.roomId,
+        start_time: input.startTime,
+        end_time: input.endTime,
+        status: input.status,
+      };
+      
+      await this.ReservationRepo.update({ id }, entityData);
+      const updatedReservation = await this.ReservationRepo.findOne({ 
+        where: { id },
+        relations: ['notifications', 'notifications.reservation', 'user', 'room'],
+      });
+      
+      if (!updatedReservation) {
+        throw new Error('Failed to retrieve updated reservation');
+      }
+      
+      this.logger.log(`updateReservation: réservation ${id} mise à jour avec succès`);
+      return mapReservationEntityToType(updatedReservation);
+    } catch (error) {
+      this.logger.error(`Erreur updateReservation: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async deleteReservation(id: string): Promise<boolean> {
-    const reservation = await this.ReservationRepo.findOneOrFail({
-      where: { id },
-    });
-    if (!reservation) {
+    this.logger.log(`deleteReservation: suppression de la réservation ${id}`);
+    
+    try {
+      const reservation = await this.ReservationRepo.findOne({
+        where: { id },
+      });
+      if (!reservation) {
+        this.logger.warn(`deleteReservation: réservation avec ID ${id} non trouvée`);
+        throw new NotFoundException(`Reservation with ID ${id} not found`);
+      }
+      
+      // Supprimer d'abord les notifications liées
+      await this.NotifRepo.delete({ reservation_id: id });
+      this.logger.log(`deleteReservation: notifications supprimées pour la réservation ${id}`);
+      
+      // Puis supprimer la réservation
+      await this.ReservationRepo.delete({ id });
+      this.logger.log(`deleteReservation: réservation ${id} supprimée avec succès`);
+      return true;
+    } catch (error) {
+      this.logger.error(`Erreur deleteReservation: ${error.message}`, error.stack);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       return false;
     }
-    
-    // Supprimer d'abord les notifications liées
-    await this.NotifRepo.delete({ reservation_id: id });
-    
-    // Puis supprimer la réservation
-    await this.ReservationRepo.delete({ id });
-    return true;
   }
 }

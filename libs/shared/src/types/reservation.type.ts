@@ -8,10 +8,10 @@ export class ReservationType {
   @Field(() => ID)
   id: string;
 
-  @Field({ name: 'user_id' })
+  @Field(() => ID, { name: 'user_id' })
   userId: string;
 
-  @Field({ name: 'room_id' })
+  @Field(() => ID, { name: 'room_id' })
   roomId: string;
 
   @Field({ name: 'start_time' })
@@ -38,10 +38,10 @@ export class ReservationType {
 
 @InputType()
 export class createReservationInput {
-  @Field()
+  @Field(() => ID)
   userId: string;
 
-  @Field()
+  @Field(() => ID)
   roomId: string;
 
   @Field()

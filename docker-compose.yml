@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Infrastructure services
   db:
     image: postgres:15
     environment:
@@ -57,7 +56,6 @@ services:
     networks:
       - app-network
 
-  # Initialization services  
   init-keycloak:
     build:
       context: .
@@ -76,7 +74,6 @@ services:
       - app-network
     restart: "no"
 
-  # Application services  
   rest-api:
     build:
       context: .
@@ -84,27 +81,22 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Database
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: ${DB_NAME}
-      # Keycloak
       KEYCLOAK_URL: http://keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
       KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      # gRPC
       GRPC_URL: grpc-service:5000
-      # MinIO - utiliser localhost pour que les URLs générées soient correctes
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_PORT: ${MINIO_PORT}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      # Other
       NODE_ENV: development
     depends_on:
       - db
@@ -123,20 +115,17 @@ services:
     ports:
       - "4000:4000"
     environment:
-      # Database
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: ${DB_NAME}
-      # Keycloak
       KEYCLOAK_URL: http://keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
       KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      # Other
       PORT: 4000
       NODE_ENV: development
     depends_on:
@@ -153,20 +142,16 @@ services:
     ports:
       - "50051:5000"
     environment:
-      # Database
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: ${DB_NAME}
-      # gRPC
       GRPC_URL: 0.0.0.0:5000
-      # MinIO - utiliser localhost pour que les URLs générées soient correctes
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_PORT: ${MINIO_PORT}
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
-      # Other
       NODE_ENV: development
     depends_on:
       - db

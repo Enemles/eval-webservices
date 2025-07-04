@@ -15,7 +15,7 @@ export class AuthService {
 
   public async login(data: any) {
     const { username, email, password } = data;
-    const loginUsername = username || email; // Accepter soit username soit email
+    const loginUsername = username || email;
 
     if (!loginUsername) {
       return {
@@ -60,7 +60,6 @@ export class AuthService {
     try {
       this.logger.log(`Tentative d'enregistrement de l'utilisateur ${email}`);
       
-      // Vérifier que les paramètres Keycloak sont définis
       if (!process.env.KEYCLOAK_URL || !process.env.KEYCLOAK_CLIENT_ID || 
           !process.env.KEYCLOAK_ADMIN_USERNAME || !process.env.KEYCLOAK_ADMIN_PASSWORD) {
         this.logger.error('Configuration Keycloak manquante dans les variables d\'environnement');
@@ -94,7 +93,6 @@ export class AuthService {
       const adminToken = await adminTokenResponse.json();
       this.logger.log(`Token admin obtenu: ${adminToken.access_token.substring(0, 20)}...`);
 
-      // Création de l'utilisateur dans Keycloak
       const keycloakRealm = process.env.KEYCLOAK_REALM || 'myrealm';
       this.logger.log(`Création de l'utilisateur dans Keycloak: ${process.env.KEYCLOAK_URL}/admin/realms/${keycloakRealm}/users`);
       
@@ -138,7 +136,6 @@ export class AuthService {
       const userId = locationHeader.split('/').pop();
       this.logger.log(`Utilisateur créé dans Keycloak avec ID: ${userId}`);
 
-      // Sauvegarde de l'utilisateur dans notre base de données
       this.logger.log(`Sauvegarde de l'utilisateur dans notre base de données`);
       return this.userRepo.save({
         keycloak_id: userId,
@@ -155,14 +152,12 @@ export class AuthService {
     try {
       this.logger.log(`Validation du token: ${token.substring(0, 20)}...`);
       
-      // Vérifier que Keycloak est accessible
       if (!process.env.KEYCLOAK_URL) {
         this.logger.error('KEYCLOAK_URL n\'est pas défini dans les variables d\'environnement');
         throw new Error('Keycloak configuration missing');
       }
 
       try {
-        // Méthode 1: Essayer d'abord la validation par userinfo
         const userInfoUrl = `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM || 'myrealm'}/protocol/openid-connect/userinfo`;
         this.logger.log(`Essai de validation avec userinfo: ${userInfoUrl}`);
         
@@ -180,11 +175,9 @@ export class AuthService {
           this.logger.log(`Status de la réponse userinfo: ${response.status} ${response.statusText}`);
           
           if (response.ok) {
-            // Si la réponse est OK, on traite normalement
             const userInfo = await response.json();
             this.logger.log(`UserInfo récupéré: ${JSON.stringify(userInfo)}`);
             
-            // Vérifier que le token contient les informations attendues
             if (!userInfo.sub) {
               this.logger.error('Token invalide: sub manquant');
               throw new Error('Token invalide: sub manquant');
@@ -192,21 +185,18 @@ export class AuthService {
             
             return await this.processUserInfo(userInfo);
           } else if (response.status === 403) {
-            // Si on a un 403, on décode le token JWT manuellement
             this.logger.log('Accès userinfo interdit (403), décodage manuel du token...');
             return await this.processTokenManually(token);
           } else if (response.status === 401) {
             this.logger.error('Token expiré ou invalide (401)');
             throw new Error('Token expiré ou invalide');
           } else {
-            // Autre erreur
             const errorBody = await response.text();
             this.logger.error(`Erreur de validation: ${response.status} - ${errorBody}`);
             throw new Error(`Erreur de validation: ${response.status}`);
           }
         } catch (fetchError) {
           this.logger.error(`Erreur lors de la requête userinfo: ${fetchError.message}`);
-          // On essaie le décodage manuel si l'appel à userinfo échoue
           return await this.processTokenManually(token);
         }
       } catch (error) {
@@ -220,16 +210,13 @@ export class AuthService {
     }
   }
 
-  // Méthode pour traiter les informations utilisateur de Keycloak
   private async processUserInfo(userInfo: any): Promise<any> {
-    // Si c'est un token admin spécial, retourner directement sans chercher en DB
     if (userInfo.isAdminToken) {
       this.logger.log('Utilisation du token admin spécial, pas de vérification en base de données');
       return userInfo;
     }
     
     try {
-      // Check if user exists in our database
       let user = await this.userRepo.findOne({
         where: { keycloak_id: userInfo.sub },
       });
@@ -244,11 +231,9 @@ export class AuthService {
         this.logger.log(`Utilisateur trouvé: ${user.id}`);
       }
 
-      // Vérifier les rôles de l'utilisateur
       const roles = userInfo.realm_access?.roles || [];
       this.logger.log(`Rôles de l'utilisateur: ${JSON.stringify(roles)}`);
 
-      // Return merged information from keycloak and our db
       return {
         ...userInfo,
         user_id: user.id,
@@ -257,7 +242,6 @@ export class AuthService {
     } catch (error) {
       this.logger.error(`Erreur lors de l'accès à la base de données: ${error.message}`);
       
-      // Pour les tests uniquement: contourner l'erreur de DB et retourner un objet user simulé
       if (process.env.NODE_ENV === 'test' || process.env.TEST_MODE === 'true') {
         this.logger.log('Mode test détecté, retour d\'un utilisateur simulé pour les tests');
         return {
@@ -271,30 +255,25 @@ export class AuthService {
     }
   }
 
-  // Méthode pour décoder manuellement le token JWT
   private async processTokenManually(token: string): Promise<any> {
     try {
       this.logger.log('Décodage manuel du token JWT...');
       
-      // Décoder le token (partie payload)
       const parts = token.split('.');
       if (parts.length !== 3) {
         throw new Error('Format de token JWT invalide');
       }
       
-      // Décoder le payload (partie du milieu)
       const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
       this.logger.log(`Payload décodé: ${JSON.stringify(payload)}`);
       
-      // Vérifier si c'est un token administratif (admin-cli)
       if (payload.azp === 'admin-cli' && !payload.sub) {
         this.logger.log('Token admin-cli détecté, traitement spécial sans sub');
-        // Créer un objet userInfo simulé pour les tokens admin
         return {
-          sub: 'admin-token',  // ID simulé
+          sub: 'admin-token',
           preferred_username: 'admin',
           email: 'admin@system',
-          roles: ['admin', 'manage-users'],  // Attribuer des rôles admin par défaut
+          roles: ['admin', 'manage-users'],
           isAdminToken: true
         };
       }
@@ -303,7 +282,6 @@ export class AuthService {
         throw new Error('Token invalide: sub manquant dans le payload');
       }
       
-      // Traiter comme un userInfo normal
       return await this.processUserInfo(payload);
     } catch (error) {
       this.logger.error(`Erreur lors du décodage manuel: ${error.message}`);
