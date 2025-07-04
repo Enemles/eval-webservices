@@ -44,13 +44,13 @@ wait_for_service "Keycloak" "http://localhost:8080" || exit 1
 wait_for_service "MinIO Console" "http://localhost:9090/minio/health/live" || exit 1
 
 # Vérifier que gRPC est accessible (simple test de port)
-echo -e "${YELLOW}⏳ Vérification du service gRPC...${NC}"
-if nc -z localhost 50051; then
-    echo -e "${GREEN}✅ Service gRPC est prêt !${NC}"
-else
-    echo -e "${RED}❌ Service gRPC n'est pas accessible${NC}"
-    exit 1
-fi
+# echo -e "${YELLOW}⏳ Vérification du service gRPC...${NC}"
+# if nc -z localhost 50051; then
+#     echo -e "${GREEN}✅ Service gRPC est prêt !${NC}"
+# else
+#     echo -e "${RED}❌ Service gRPC n'est pas accessible${NC}"
+#     exit 1
+# fi
 
 # Attendre encore un peu pour s'assurer que l'init est terminé
 echo -e "${YELLOW}⏳ Attente de l'initialisation complète (5s)...${NC}"

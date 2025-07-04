@@ -5,17 +5,17 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_USER: pguser
-      POSTGRES_PASSWORD: pgpass
-      POSTGRES_DB: pgdb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pguser -d pgdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -24,12 +24,12 @@ services:
     image: quay.io/keycloak/keycloak:latest
     command: start-dev
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://db:5432/pgdb
-      KC_DB_USERNAME: pguser
-      KC_DB_PASSWORD: pgpass
+      KC_DB_URL: jdbc:postgresql://db:5432/${DB_NAME}
+      KC_DB_USERNAME: ${DB_USER}
+      KC_DB_PASSWORD: ${DB_PASS}
     ports:
       - "8080:8080"
     depends_on:
@@ -41,11 +41,11 @@ services:
   minio:
     image: minio/minio
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-      MINIO_SERVER_URL: http://localhost:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_SERVER_URL: http://${MINIO_ENDPOINT}:${MINIO_PORT}
     ports:
-      - "9000:9000"
+      - "${MINIO_PORT}:9000"
       - "9090:9090"
     volumes:
       - minio_data:/data
@@ -64,6 +64,11 @@ services:
       dockerfile: apps/rest/Dockerfile
     environment:
       KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
     depends_on:
       - keycloak
     command: ["sh", "-c", "sleep 45 && node /app/init-keycloak.js"]
@@ -82,19 +87,21 @@ services:
       # Database
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
-      POSTGRES_USER: pguser
-      POSTGRES_PASSWORD: pgpass
-      POSTGRES_DB: pgdb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
       # Keycloak
       KEYCLOAK_URL: http://keycloak:8080
-      KEYCLOAK_REALM: myrealm
-      KEYCLOAK_CLIENT_ID: myclient
-      KEYCLOAK_CLIENT_SECRET: mysecret
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
       # gRPC
       GRPC_URL: grpc-service:5000
       # MinIO - utiliser localhost pour que les URLs générées soient correctes
-      MINIO_ENDPOINT: localhost
-      MINIO_PORT: 9000
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_PORT: ${MINIO_PORT}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       # Other
       NODE_ENV: development
     depends_on:
@@ -117,14 +124,14 @@ services:
       # Database
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
-      POSTGRES_USER: pguser
-      POSTGRES_PASSWORD: pgpass
-      POSTGRES_DB: pgdb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
       # Keycloak
       KEYCLOAK_URL: http://keycloak:8080
-      KEYCLOAK_REALM: myrealm
-      KEYCLOAK_CLIENT_ID: myclient
-      KEYCLOAK_CLIENT_SECRET: mysecret
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
       # Other
       PORT: 4000
       NODE_ENV: development
@@ -145,16 +152,16 @@ services:
       # Database
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
-      POSTGRES_USER: pguser
-      POSTGRES_PASSWORD: pgpass
-      POSTGRES_DB: pgdb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
       # gRPC
       GRPC_URL: 0.0.0.0:5000
       # MinIO - utiliser localhost pour que les URLs générées soient correctes
-      MINIO_ENDPOINT: localhost
-      MINIO_PORT: 9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_PORT: ${MINIO_PORT}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       # Other
       NODE_ENV: development
     depends_on:
