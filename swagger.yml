@@ -15,8 +15,7 @@ info:
     **Accès Swagger UI:** http://localhost:3000/docs
   version: 1.0.0
   contact:
-    name: "Équipe de développement"
-    email: "dev@example.com"
+    name: "SERVANT Geoffrey FARHI Selmène"
 
 servers:
   - url: http://localhost:3000/api
@@ -262,6 +261,7 @@ paths:
           schema:
             type: string
             format: email
+            example: "MON_EMAIL@example.com"
       responses:
         '200':
           description: Détails de l'utilisateur retournés
@@ -567,7 +567,7 @@ components:
         Authentification JWT Bearer token.
         
         **Pour obtenir un token :**
-        1. POST /users/login ou /auth/login avec email/password
+        1. POST /users/login ou /auth/login avec username/password
         2. Utiliser le token dans le header: `Authorization: Bearer <token>`
 
   schemas:
@@ -599,22 +599,23 @@ components:
           example: "Doe"
         keycloak_id:
           type: string
-          description: Identifiant Keycloak
-          example: "keycloak_12345"
+          description: Identifiant Keycloak (généré automatiquement)
+          example: "auto-generated-id"
         created_at:
           type: string
           format: date-time
           description: Date de création
-          example: "2024-01-15T10:30:00Z"
+          example: "2025-01-15T10:30:00Z"
         updated_at:
           type: string
           format: date-time
           description: Date de dernière modification
-          example: "2024-01-15T10:30:00Z"
+          example: "2025-01-15T10:30:00Z"
 
     CreateUserDto:
       type: object
       required:
+        - username
         - email
         - password
       properties:
@@ -622,10 +623,6 @@ components:
           type: string
           description: Nom d'utilisateur
           example: "john_doe"
-        keycloak_id:
-          type: string
-          description: Identifiant Keycloak
-          example: "keycloak_12345"
         email:
           type: string
           format: email
@@ -647,18 +644,17 @@ components:
     LoginDto:
       type: object
       required:
-        - email
+        - username
         - password
       properties:
-        email:
+        username:
           type: string
-          format: email
-          description: Email de l'utilisateur
-          example: "user@example.com"
+          description: Nom d'utilisateur
+          example: "john_doe"
         password:
           type: string
           description: Mot de passe de l'utilisateur
-          example: "password123"
+          example: "securePassword123"
 
     # Room schemas
     Room:
@@ -686,12 +682,12 @@ components:
           type: string
           format: date-time
           description: Date de création
-          example: "2024-01-15T10:30:00Z"
+          example: "2025-01-15T10:30:00Z"
         updated_at:
           type: string
           format: date-time
           description: Date de dernière modification
-          example: "2024-01-15T10:30:00Z"
+          example: "2025-01-15T10:30:00Z"
 
     CreateRoomDto:
       type: object
@@ -753,12 +749,12 @@ components:
           type: string
           format: date-time
           description: Date et heure de début
-          example: "2024-07-15T09:00:00Z"
+          example: "2025-07-15T09:00:00Z"
         endTime:
           type: string
           format: date-time
           description: Date et heure de fin
-          example: "2024-07-15T11:00:00Z"
+          example: "2025-07-15T11:00:00Z"
         status:
           type: string
           enum: [pending, approved, rejected, cancelled]
@@ -768,7 +764,7 @@ components:
           type: string
           format: date-time
           description: Date de création
-          example: "2024-01-15T10:30:00Z"
+          example: "2025-01-15T10:30:00Z"
         user:
           $ref: '#/components/schemas/User'
         room:
@@ -800,12 +796,12 @@ components:
           type: string
           format: date-time
           description: Date et heure de début (ISO8601)
-          example: "2024-07-15T09:00:00Z"
+          example: "2025-07-15T09:00:00Z"
         end_time:
           type: string
           format: date-time
           description: Date et heure de fin (ISO8601)
-          example: "2024-07-15T11:00:00Z"
+          example: "2025-07-15T11:00:00Z"
         status:
           type: string
           enum: [pending, approved, rejected, cancelled]
@@ -830,12 +826,12 @@ components:
           type: string
           format: date-time
           description: Date et heure de début (ISO8601)
-          example: "2024-07-15T09:00:00Z"
+          example: "2025-07-15T09:00:00Z"
         end_time:
           type: string
           format: date-time
           description: Date et heure de fin (ISO8601)
-          example: "2024-07-15T11:00:00Z"
+          example: "2025-07-15T11:00:00Z"
         status:
           type: string
           enum: [pending, approved, rejected, cancelled]
@@ -864,12 +860,12 @@ components:
           type: string
           format: date-time
           description: Date de la notification
-          example: "2024-01-15T10:30:00Z"
+          example: "2025-01-15T10:30:00Z"
         created_at:
           type: string
           format: date-time
           description: Date de création
-          example: "2024-01-15T10:30:00Z"
+          example: "2025-01-15T10:30:00Z"
 
     # Error schemas
     Error:

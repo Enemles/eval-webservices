@@ -26,8 +26,9 @@ export class AuthService {
 
     this.logger.log(`Tentative de connexion avec username/email: ${loginUsername}`);
     
+    const keycloakRealm = process.env.KEYCLOAK_REALM || 'myrealm';
     const response = await fetch(
-      `${process.env.KEYCLOAK_URL}/realms/myrealm/protocol/openid-connect/token`,
+      `${process.env.KEYCLOAK_URL}/realms/${keycloakRealm}/protocol/openid-connect/token`,
       {
         method: 'POST',
         headers: {
@@ -60,7 +61,7 @@ export class AuthService {
       this.logger.log(`Tentative d'enregistrement de l'utilisateur ${email}`);
       
       // Vérifier que les paramètres Keycloak sont définis
-      if (!process.env.KEYCLOAK_URL || !process.env.KEYCLOAK_ADMIN_CLIENT_ID || 
+      if (!process.env.KEYCLOAK_URL || !process.env.KEYCLOAK_CLIENT_ID || 
           !process.env.KEYCLOAK_ADMIN_USERNAME || !process.env.KEYCLOAK_ADMIN_PASSWORD) {
         this.logger.error('Configuration Keycloak manquante dans les variables d\'environnement');
         throw new Error('Keycloak configuration is missing');
@@ -76,7 +77,7 @@ export class AuthService {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           body: querystring.stringify({
-            client_id: process.env.KEYCLOAK_ADMIN_CLIENT_ID,
+            client_id: 'admin-cli',
             grant_type: 'password',
             username: process.env.KEYCLOAK_ADMIN_USERNAME,
             password: process.env.KEYCLOAK_ADMIN_PASSWORD,
@@ -94,10 +95,11 @@ export class AuthService {
       this.logger.log(`Token admin obtenu: ${adminToken.access_token.substring(0, 20)}...`);
 
       // Création de l'utilisateur dans Keycloak
-      this.logger.log(`Création de l'utilisateur dans Keycloak: ${process.env.KEYCLOAK_URL}/admin/realms/myrealm/users`);
+      const keycloakRealm = process.env.KEYCLOAK_REALM || 'myrealm';
+      this.logger.log(`Création de l'utilisateur dans Keycloak: ${process.env.KEYCLOAK_URL}/admin/realms/${keycloakRealm}/users`);
       
       const userResponse = await fetch(
-        `${process.env.KEYCLOAK_URL}/admin/realms/myrealm/users`,
+        `${process.env.KEYCLOAK_URL}/admin/realms/${keycloakRealm}/users`,
         {
           method: 'POST',
           headers: {
